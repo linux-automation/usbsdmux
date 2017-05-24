@@ -177,6 +177,7 @@ class Usb2642I2C(object):
       I2cCommandPhaseLen = 0x00,
       I2cCommandPayload = (ctypes.c_uint8*9)())
 
+    assert ctypes.sizeof(cmd) == 16
     return cmd, dataArray
 
   def _get_SCSI_cmd_I2C_write_read(self, slaveAddr, writeData, readLength):
@@ -209,6 +210,7 @@ class Usb2642I2C(object):
       I2cWritePhaseLen = writeCount,
       I2cCommandPayload = writeDataArray)
 
+    assert ctypes.sizeof(cmd) == 16
     return cmd, readDataArray
 
 
@@ -267,6 +269,7 @@ class Usb2642I2C(object):
                   duration=0,
                   # output: auxiliary information (?)
                   info=0)
+    assert ctypes.sizeof(sgio) == 88
     return sgio, sense
 
 
