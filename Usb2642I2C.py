@@ -4,7 +4,13 @@ import struct
 import ctypes
 import string
 import fcntl
-from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, toPrettyHexString
+from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, to_pretty_hex
+
+
+"""
+This modules provides an interface to use the auxiliary and configuration I2C-busses of the Microchip USB2642.
+"""
+
 
 class FrameLengthException(Exception):
   pass
@@ -15,12 +21,13 @@ class IoctlFailed(Exception):
 class I2cTransactionFailed(Exception):
   pass
 
+
 class Usb2642I2C(object):
   """
-  This class provides an interface to interact with devices on a Microchip USB2642 auxiliary I2C Bus.
+  This class provides an interface to interact with devices on a Microchip USB2642 auxiliary I2C Bus and to write configuration to an EEPROM on the configuration I2C Bus.
 
   To do so it uses vendor specific SCSI-commands on the mass-storage device provided by the USB2642.
-  Documentation to this behavior can befond in this documents:
+  Documentation to this behavior can be found in this documents:
 
   * 'Microchip: I2C_Over_USB_UserGuilde_50002283A.pdf' (Can be found in the (Windows-) software example provided on the components webpage)
   * The USB2641 datasheet
@@ -34,8 +41,18 @@ class Usb2642I2C(object):
 
 
   This class uses the /dev/sg* -Interface to access the SCSI-device even if no media is present.
-  Make sure you have rw-rights on it :)
+  Make sure you have rw-rights :)
   """
+
+  def __init__(self, sg):
+    """
+    Create a new USB2642I2C-Interface wrapper.
+
+    Arguments:
+    sg -- The sg-device to use. E.g. "/dev/sg1"
+    """
+    self.sg = sg
+
 
   class _SgioHdrStruct(ctypes.Structure):
     """
@@ -102,7 +119,6 @@ class Usb2642I2C(object):
   class _USB2642I2cWriteStruct(ctypes.Structure):
     """I2C-Write Data Structure for up to 512 Bytes of Data
 
-
     According to: 'Microchip: I2C_Over_USB_UserGuilde_50002283A.pdf' P.20
     """
 
@@ -136,7 +152,7 @@ class Usb2642I2C(object):
     ]
 
 
-  def _getScsiCmdI2cWrite(self, slaveAddr, data):
+  def _get_SCSI_cmd_I2C_write(self, slaveAddr, data):
     """
     Create an I2cWrite Command Structure to write up to 512 bytes to device slaveAddr.
 
@@ -163,7 +179,7 @@ class Usb2642I2C(object):
 
     return cmd, dataArray
 
-  def _getScsiCmdI2cWriteRead(self, slaveAddr, writeData, readLength):
+  def _get_SCSI_cmd_I2C_write_read(self, slaveAddr, writeData, readLength):
     """
     Create an I2cWriteRead Command Structure to write up to 9 bytes to device slaveAddr and then read back up to 512 bytes of data.
 
@@ -196,9 +212,15 @@ class Usb2642I2C(object):
     return cmd, readDataArray
 
 
-  def _getSgio(self, command, Sg_Dxfer, databuffer):
+  def _get_SGIO(self, command, Sg_Dxfer, databuffer):
     """Fill the SG_IO ioctl() -structure with sane defaults for the given command.
-    The command will create a 64-byte sense-buffer for returned status."""
+    The command will create a 64-byte sense-buffer for returned status.
+
+    Arguments:
+    command -- SCSI-Command to use. ctypes.c_uint8
+    Sg_Dxfer -- _SG_DXFER_* to set the direction of the SCSI transfer.
+    databuffer -- 512 bytes buffer of the block to read or write.
+    """
     ASCII_S = 83
     sense = ctypes.c_buffer(64)
 
@@ -248,15 +270,20 @@ class Usb2642I2C(object):
     return sgio, sense
 
 
-  def _callIoctl(self, command, sg_dxfer, databuffer):
+  def _call_IOCTL(self, command, sg_dxfer, databuffer):
     """
     Call the ioctl()
 
     This function will create the struct to call the ioctl() and handle return codes.
+
+    Arguments:
+    command -- SCSI Command payload to send. 16-Byte buffer containing the SCSI command parameters.
+    sg_dxfer -- _SG_DXFER_*: Direction of the SCSI transfer
+    databuffer -- 512 byte long buffer to be written oder read
     """
-    sgio, sense = self._getSgio(command, sg_dxfer, databuffer)
+    sgio, sense = self._get_SGIO(command, sg_dxfer, databuffer)
 #    print("SGIO:")
-#    print(self.toPrettyHexString(sgio))
+#    print(self.to_pretty_hex(sgio))
 
     with open(self.sg, 'r') as fh:
       rc =  fcntl.ioctl(fh, self._SG_IO, ctypes.addressof(sgio))
@@ -267,19 +294,28 @@ class Usb2642I2C(object):
 
   def write_config(self, data):
     """
-    Writes the eeprom contents from data into the config EEPROM.
+    Writes the eeprom contents from data into the config EEPROM on the auxiliary I2C bus.
 
-    This is done using reverse-engineered magic...
+    This is done using reverse-engineered commands send by the Microchip Windows-Demo-Tool.
 
     Arguments:
-    data -- EEPROM blob to write as ctype.buffer
+    data -- EEPROM blob to write as ctype.buffer. Length 384 Bytes as described in the USB2642 Datasheet.
     """
 
+    # SCSI Command was found on the USB-Bus.
+    # Since most of the bytes are unknown this is used as plain magic.
     scsiCommand = list_to_uint8_array([0xCF, 0x54, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], 16)
 
+    # First looked like the data block was prefixed with some magic.
+    # But at a second look this was not the case. Setting the length of this field to 0 bytes prevents any padding.
     data_prefix = list_to_uint8_array([], 0)
+
+    # Data in the captured USB-transfer was suffixed with some random data.
+    # Experiments showed that 0x00 works fine too.
+    # Since the buffer is zero-ed when initialized the suffix could be removed.
     data_suffix = list_to_uint8_array([0x00], 127)
 
+    # Copying prefix, data and suffix to the SCSI command data-section
     payload = (ctypes.c_uint8*512)()
     for i in range(ctypes.sizeof(data_prefix)):
       payload[i] = data_prefix[i]
@@ -288,13 +324,11 @@ class Usb2642I2C(object):
     for i in range(ctypes.sizeof(data_suffix)):
       payload[i+ctypes.sizeof(data_prefix)+ctypes.sizeof(data)] = data_suffix[i]
 
-
-    print(toPrettyHexString(payload))
-
-    self._callIoctl(scsiCommand, self._SG_DXFER_TO_DEV, payload)
+    # Perform the actual SCSI transfer
+    self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, payload)
 
 
-  def writeReadTo(self, i2cAddr, writeData, readLength):
+  def write_read_to(self, i2cAddr, writeData, readLength):
     """
     Tries to write data to an I2C-Device and afterwards read data from that device.
 
@@ -319,14 +353,14 @@ class Usb2642I2C(object):
     writeData -- iterable of bytes to write in the first phase
     readLengh -- number of bytes (0..512) to read in the second phase
     """
-    scsiCommand, data = self._getScsiCmdI2cWriteRead(i2cAddr, writeData, readLength)
+    scsiCommand, data = self._get_SCSI_cmd_I2C_write_read(i2cAddr, writeData, readLength)
     # TODO: Add error handling if length of read or write do not match requirements
 
 #    print("I2C-Command:")
-#    print(self.toPrettyHexString(scsiCommand))
+#    print(self.to_pretty_hex(scsiCommand))
 #    print("I2C-Payload:")
-#    print(self.toPrettyHexString(data))
-    data, sense, sgio = self._callIoctl(scsiCommand, self._SG_DXFER_FROM_DEV, data)
+#    print(self.to_pretty_hex(data))
+    data, sense, sgio = self._call_IOCTL(scsiCommand, self._SG_DXFER_FROM_DEV, data)
 
     if sgio.status != 0:
       raise I2cTransactionFailed("SCSI-Transaction ended with status {}. I2C-Transaction has probably failed.".format(sgio.status))
@@ -337,7 +371,7 @@ class Usb2642I2C(object):
 
     return ret
 
-  def writeTo(self, i2cAddr, data):
+  def write_to(self, i2cAddr, data):
     """
     Tries to write data to an I2C-Device.
 
@@ -355,27 +389,19 @@ class Usb2642I2C(object):
     Arguments:
     i2cAddr -- 7-Bit I2C Slave address (as used by Linux). Will be shifted 1 Bit to the left before adding the R/W-bit.
     data -- iterateable of bytes to write."""
-    scsiCommand, data = self._getScsiCmdI2cWrite(i2cAddr, data)
+    scsiCommand, data = self._get_SCSI_cmd_I2C_write(i2cAddr, data)
     # TODO: Add length checks
 
 #    print("I2C-Command:")
-#    print(self.toPrettyHexString(scsiCommand))
+#    print(self.to_pretty_hex(scsiCommand))
 #    print("I2C-Payload:")
-#    print(self.toPrettyHexString(data))
-    data, sense, sgio = self._callIoctl(scsiCommand, self._SG_DXFER_TO_DEV, data)
+#    print(self.to_pretty_hex(data))
+    data, sense, sgio = self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, data)
 
     if sgio.status != 0:
       raise I2cTransactionFailed("SCSI-Transaction ended with status {}. I2C-Transaction has probably failed.".format(sgio.status))
 
 
-  def __init__(self, sg):
-    """
-    Create a new USB2642I2C-Interface wrapper.
-
-    Arguments:
-    sg -- The sg-device to use. E.g. "/dev/sg1"
-    """
-    self.sg = sg
 
 
 

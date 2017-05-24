@@ -43,7 +43,7 @@ class Pca9536(object):
         Writes a register on the Pca9536 with a given value.
         """
 
-        self._usb.writeTo(self._I2cAddr, [register, value])
+        self._usb.write_to(self._I2cAddr, [register, value])
 
     def set_pin_to_output(self, pins):
         """

@@ -6,7 +6,13 @@ import Usb2642I2C
 import time
 import argparse
 import sys
-from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, toPrettyHexString
+from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, to_pretty_hex
+
+
+"""
+This module provides the high-level interface needed to write the contents of the configuration-EEPROM of a USB2642 using the USB2642.
+"""
+
 
 class VerificationFailedException(Exception):
   pass
@@ -23,7 +29,7 @@ class USB2642Eeprom(object):
 
     Arguments:
     sg -- /dev/sg* to use
-    i2c_addr -- 7-Bit Address of the EEPROM to use. Defaults to 0x50 for the configuration-EEPROm
+    i2c_addr -- 7-Bit Address of the EEPROM to use. Defaults to 0x50 for the configuration-EEPROM. You probably do NOT want to override this.
     """
 
     self.i2c = Usb2642I2C.Usb2642I2C(sg)
@@ -33,7 +39,7 @@ class USB2642Eeprom(object):
     """
     Struct that contains the Configuration of the Card Reader and USB Hub.
     """
-    _pack_ = 1
+    _pack_ = 1 # forces the struct to be packed tight and overrides the default 4-byte aligned packing.
     _fields_ = [
 
       # Flash Media Controller Configuration
@@ -102,17 +108,17 @@ class USB2642Eeprom(object):
       ('NVSTORE_SIG2', ctypes.c_uint8*(0x17F-0x17C+1))  # 0x17C .. 0x17F Non-Volatile Storage 2 Signature
       ]
 
-    def getStruct(reader_VID, reader_PID, reader_vendorString, reader_productString, reader_serial, scsi_mfg, scsi_product):
+    def get_struct(reader_VID, reader_PID, reader_vendorString, reader_productString, reader_serial, scsi_mfg, scsi_product):
       """
       Returns a pre-filled EepromStruct.
 
-      Parameters are taken from the Datasheets defaults of nothing else is mentioned.
+      Parameters are taken from the Datasheets defaults if nothing else is mentioned.
       """
       s = USB2642Eeprom._EepromStruct(
         USB_SER_NUM = string_to_microchip_unicode_uint8_array(reader_serial, 0x19-0x00+1),
         USB_VID = 0x0424,
         USB_PID = 0x4041,
-        USB_LANG_ID = list_to_uint8_array([0x04, 0x03, 0x09, 0x04], 0x21-0x1E+1),
+        USB_LANG_ID = list_to_uint8_array([0x04, 0x03, 0x09, 0x04], 0x21-0x1E+1), # reverse engineered from actual EEPROM. Does NOT match the datasheet.
         USB_MFR_STR = string_to_microchip_unicode_uint8_array(reader_vendorString, 0x5D-0x22+1),
         USB_PRD_STR = string_to_microchip_unicode_uint8_array(reader_productString, 0x99-0x5E+1),
         USB_BM_ATT = 0x80, # Bus Powered, without Remote wakeup
@@ -136,8 +142,8 @@ class USB2642Eeprom(object):
         CFG_DAT_BYTE2 = 0x28,
         CFG_DAT_BYTE3 = 0x00,
         NR_DEVICE = 0x02,
-        PORT_DIS_SP = 0x0C,
-        PORT_DIS_BP = 0x0C,
+        PORT_DIS_SP = 0x0C, # Disable the unused Downstream-Ports of the hub
+        PORT_DIS_BP = 0x0C, # Disable the unused Downstream-Ports of the hub
         MAX_PWR_SP = 0x01,
         MAX_PWR_BP = 0x32,
         HC_MAX_C_SP = 0x01,
@@ -162,7 +168,6 @@ class USB2642Eeprom(object):
         LUN_DEV_MAP2 = list_to_uint8_array([0xFF, 0xFF, 0xFF, 0xFF], 0x14B-0x147+1),
         NVSTORE_SIG2 = string_to_uint8_array("ecf1", 0x17F-0x17C+1, encoding="UTF-8", padding=0x00)
       )
-      print(ctypes.sizeof(s))
       assert ctypes.sizeof(s) == 384
       return s
 
@@ -176,7 +181,7 @@ class USB2642Eeprom(object):
     len  -- Number of bytes to read (0..256)
     """
 
-    return self.i2c.writeReadTo(self.addr, [addr], len)
+    return self.i2c.write_read_to(self.addr, [addr], len)
 
   def _write_EEPROM(self, addr, data):
     """
@@ -196,13 +201,13 @@ class USB2642Eeprom(object):
       lowerOffset = lower-addr
       upperOffset = upper-addr
 
-      self.i2c.writeTo(self.addr, [lower]+data[lowerOffset:(upperOffset+1)])
+      self.i2c.write_to(self.addr, [lower]+data[lowerOffset:(upperOffset+1)])
       time.sleep(0.1)
       offset = upperOffset+1
 
-  def write_and_verify(self, VID, PID, product_string, vendor_string, serial, scsi_mfg, scsi_product):
+  def write(self, VID, PID, product_string, vendor_string, serial, scsi_mfg, scsi_product):
     """
-    Writes a configuration to the EEPROM and verifies, that it has been written successful.
+    Writes a configuration to the EEPROM.
 
     Arguments:
     VID -- USB Vendor ID, uint_16
@@ -212,7 +217,7 @@ class USB2642Eeprom(object):
     serial -- Serial Number, 12 Hex Digits
     """
 
-    s = USB2642Eeprom._EepromStruct.getStruct(
+    s = USB2642Eeprom._EepromStruct.get_struct(
       reader_VID=int(args.VID, base=16),
       reader_PID=int(args.PID, base=16),
       reader_productString=args.productString,
@@ -223,17 +228,8 @@ class USB2642Eeprom(object):
     )
     buffer = (ctypes.c_uint8*ctypes.sizeof(s))()
     ctypes.memmove(ctypes.addressof(buffer), ctypes.addressof(s), ctypes.sizeof(s))
-#    self._write_EEPROM(0x00, buffer)
-    print(toPrettyHexString(buffer))
 
     self.i2c.write_config(buffer)
-
-#    readBuffer = self._read_EEPROM(addr=0, len=256)
-#    print(self.i2c.toPrettyHexString(readBuffer))
-#
-#    for i in range(min(ctypes.sizeof(buffer), len(readBuffer))):
-#      if buffer[i] != readBuffer[i]:
-#        raise VerificationFailedException("Verification of EEPROM contents failed at byte {}".format(i))
 
 
 if __name__ == "__main__":
@@ -250,7 +246,7 @@ if __name__ == "__main__":
 
   c = USB2642Eeprom(args.sg)
 
-  c.write_and_verify(
+  c.write(
     VID=int(args.VID, base=16),
     PID=int(args.PID, base=16),
     product_string=args.productString,
@@ -260,4 +256,4 @@ if __name__ == "__main__":
     scsi_product = args.ScsiProduct
   )
 
-  print("Write completed and verification successful.")
+  print("Write completed")

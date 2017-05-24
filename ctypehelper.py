@@ -58,7 +58,7 @@ def string_to_microchip_unicode_uint8_array(text, array_length, constant=0x03):
   """
 
   a = string_to_uint8_array(text, array_length)
-  a[0] = len(str)*2+2
+  a[0] = len(text)*2+2
   a[1] = constant
   return a
 
@@ -81,7 +81,7 @@ def list_to_uint8_array(numbers, array_length):
     a[i] = int(numbers[i])
   return a
 
-def toPrettyHexString(buffer):
+def to_pretty_hex(buffer):
     """Takes a byte-buffer and creates a pretty-looking hex-string from it"""
 
     if isinstance(buffer, ctypes.Structure):
