@@ -6,69 +6,11 @@ import Usb2642I2C
 import time
 import argparse
 import sys
+from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, toPrettyHexString
 
 class VerificationFailedException(Exception):
   pass
 
-def string_to_uint8_array(str, array_length, c_string=False, padding=0xFF, encoding="UTF-16"):
-  """
-  Converts a python-string into a ctypes.c_uint8 array of a given length. The str will be encoded with UTF-8 before converting.
-
-  If c_string is True the string will be terminated with 0x00.
-  str will be padded with padding if the buffer is longer than the str.
-  str will be cropped if the buffer is shorter.
-
-  Arguments:
-  str -- python string
-  array_length -- length of the resulting array in bytes.
-  c_string -- Switch to treat a str as c-string. String will be terminated with 0x00
-  padding -- This value will be used to pad buffer to the given length.
-  """
-
-  a = (ctypes.c_uint8*array_length)()
-  for i in range(array_length):
-    a[i] = padding
-
-  bytes = str.encode(encoding)
-  if c_string:
-    count = min(len(bytes), array_length-1)
-  else:
-    count = min(len(bytes), array_length)
-
-  for i in range(count):
-    a[i] = int(bytes[i])
-  if c_string:
-    i += 1
-    a[i] = 0x00
-  return a
-
-def string_to_microchip_unicode_uint8_array(str, array_length, constant=0x03):
-  """
-
-  """
-  a = string_to_uint8_array(str, array_length)
-  a[0] = len(str)*2+2
-  a[1] = constant
-  return a
-
-def list_to_uint8_array(numbers, array_length):
-  """
-  Converts a list of numbers into a ctypes.c_uint8 array of a given length.
-
-  If numbers is too short for array_length it will be padded with 0x00.
-  If numbers is too long it will be cropped.
-
-  Arguments:
-  numbers -- iterable of numbers (int, bytes, float...)
-  array_length -- length of the resulting array
-  """
-
-  a = (ctypes.c_uint8*array_length)()
-
-  count = min(len(numbers), array_length)
-  for i in range(count):
-    a[i] = int(numbers[i])
-  return a
 
 class USB2642Eeprom(object):
   """
@@ -95,57 +37,69 @@ class USB2642Eeprom(object):
     _fields_ = [
 
       # Flash Media Controller Configuration
-      ('USB_SER_NUM', ctypes.c_uint8*(0x19-0x00+1)),    # 0x00 .. 0x19 USB Serial Number
-      ('USB_VID', ctypes.c_uint16),                     # 0x1A .. 0x1B USB Vendor ID
-      ('USB_PID', ctypes.c_uint16),                     # 0x1C .. 0x1D USB Product ID
-      ('USB_LANG_ID', ctypes.c_uint8*(0x21-0x1E+1)),    # 0x1E .. 0x21 USB Language Identifier, see http://www.usb.org/developers/docs/USB_LANGIDs.pdf
-      ('USB_MFR_STR', ctypes.c_uint8*(0x5D-0x22+1)),    # 0x22 .. 0x5D USB Manufacturer String (Unicode)
-      ('USB_PRD_STR', ctypes.c_uint8*(0x99-0x5E+1)),    # 0x5E .. 0x99 USB Product String (Unicode)
-      ('USB_BM_ATT', ctypes.c_uint8),                   # 0x9A         USB BmAttribute, see http://sdphca.ucsd.edu/lab_equip_manuals/usb_20.pdf, P.266
-      ('USB_MAX_PWR', ctypes.c_uint8),                  # 0x9B         USB Max Power, see http://sdphca.ucsd.edu/lab_equip_manuals/usb_20.pdf, P.266, 1 Digit = 2mA
-      ('ATT_LB', ctypes.c_uint8),                       # 0x9C         Attribute Lo byte
-      ('ATT_HLB', ctypes.c_uint8),                      # 0x9D         Attribute Hi Lo byte
-      ('ATT_LHB', ctypes.c_uint8),                      # 0x9E         Attribute Lo Hi byte
-      ('ATT_HB', ctypes.c_uint8),                       # 0x9F         Attribute Hi byte
-      ('reserved0', ctypes.c_uint8*(0xA4-0xA0)),        # 0xA0 .. 0xA3 reserved
-      ('LUN_PWR_LB', ctypes.c_uint8),                   # 0xA4         LUN Power Lo byte
-      ('LUN_PWR_HB', ctypes.c_uint8),                   # 0xA5         LUN Power Hi byte
-      ('reserved1', ctypes.c_uint8*(0xBF-0xA6)),        # 0xA6 .. 0xBE reserved
-      ('DEV3_ID_STR', ctypes.c_uint8*(0xC6-0xBF)),      # 0xBF .. 0xC5 Card Reader Identifyer String
-      ('INQ_VEN_STR', ctypes.c_uint8*(0xCE-0xC6)),      # 0xC6 .. 0xCD Inquiry Vendor String
-      ('INQ_PRD_STR', ctypes.c_uint8*(0xD3-0xCE)),      # 0xCE .. 0xD2 48QFN Inquiry Product String
-      ('DYN_NUM_LUN', ctypes.c_uint8),                  # 0xD3         Dynamic Number of LUNs
-      ('LUN_DEV_MAP', ctypes.c_uint8*(0xD8-0xD4)),      # 0xD4 .. 0xD7 LUN to Device Mapping
-      ('reserved2', ctypes.c_uint8*(0xDB-0xD8)),        # 0xD8 .. 0xDA reserved
+      ('USB_SER_NUM', ctypes.c_uint8*(0x19-0x00+1)),    # 0x00  .. 0x19  USB Serial Number
+      ('USB_VID', ctypes.c_uint16),                     # 0x1A  .. 0x1B  USB Vendor ID
+      ('USB_PID', ctypes.c_uint16),                     # 0x1C  .. 0x1D  USB Product ID
+      ('USB_LANG_ID', ctypes.c_uint8*(0x21-0x1E+1)),    # 0x1E  .. 0x21  USB Language Identifier, see http://www.usb.org/developers/docs/USB_LANGIDs.pdf
+      ('USB_MFR_STR', ctypes.c_uint8*(0x5D-0x22+1)),    # 0x22  .. 0x5D  USB Manufacturer String (Unicode)
+      ('USB_PRD_STR', ctypes.c_uint8*(0x99-0x5E+1)),    # 0x5E  .. 0x99  USB Product String (Unicode)
+      ('USB_BM_ATT', ctypes.c_uint8),                   # 0x9A           USB BmAttribute, see http://sdphca.ucsd.edu/lab_equip_manuals/usb_20.pdf, P.266
+      ('USB_MAX_PWR', ctypes.c_uint8),                  # 0x9B           USB Max Power, see http://sdphca.ucsd.edu/lab_equip_manuals/usb_20.pdf, P.266, 1 Digit = 2mA
+      ('ATT_LB', ctypes.c_uint8),                       # 0x9C           Attribute Lo byte
+      ('ATT_HLB', ctypes.c_uint8),                      # 0x9D           Attribute Hi Lo byte
+      ('ATT_LHB', ctypes.c_uint8),                      # 0x9E           Attribute Lo Hi byte
+      ('ATT_HB', ctypes.c_uint8),                       # 0x9F           Attribute Hi byte
+      ('reserved0', ctypes.c_uint8*(0xA4-0xA0)),        # 0xA0  .. 0xA3  reserved
+      ('LUN_PWR_LB', ctypes.c_uint8),                   # 0xA4           LUN Power Lo byte
+      ('LUN_PWR_HB', ctypes.c_uint8),                   # 0xA5           LUN Power Hi byte
+      ('reserved1', ctypes.c_uint8*(0xBF-0xA6)),        # 0xA6  .. 0xBE  reserved
+      ('DEV3_ID_STR', ctypes.c_uint8*(0xC6-0xBF)),      # 0xBF  .. 0xC5  Card Reader Identifyer String
+      ('INQ_VEN_STR', ctypes.c_uint8*(0xCE-0xC6)),      # 0xC6  .. 0xCD  Inquiry Vendor String
+      ('INQ_PRD_STR', ctypes.c_uint8*(0xD3-0xCE)),      # 0xCE  .. 0xD2  48QFN Inquiry Product String
+      ('DYN_NUM_LUN', ctypes.c_uint8),                  # 0xD3           Dynamic Number of LUNs
+      ('LUN_DEV_MAP', ctypes.c_uint8*(0xD8-0xD4)),      # 0xD4  .. 0xD7  LUN to Device Mapping
+      ('reserved2', ctypes.c_uint8*(0xDB-0xD8)),        # 0xD8  .. 0xDA  reserved
 
       # HUB CONTROLLER CONFIGURATION
-      ('SD_MMC_BUS_TIMING', ctypes.c_uint8*(0xDE-0xDB)),# 0xDB .. 0xDD SD/MMC Bus Timing Control
-      ('VID', ctypes.c_uint16),                         # 0xDE .. 0xDF Hub Vendor ID
-      ('PID', ctypes.c_uint16),                         # 0xE0 .. 0xE1 Hub Product ID
-      ('DID', ctypes.c_uint16),                         # 0xE2 .. 0xE3 Hub Device ID
-      ('CFG_DAT_BYTE1', ctypes.c_uint8),                # 0xE4         Configuration Data Byte 1
-      ('CFG_DAT_BYTE2', ctypes.c_uint8),                # 0xE5         Configuration Data Byte 2
-      ('CFG_DAT_BYTE3', ctypes.c_uint8),                # 0xE6         Configuration Data Byte 3
-      ('NR_DEVICE', ctypes.c_uint8),                    # 0xE7         Non-Removeable Devices
-      ('PORT_DIS_SP', ctypes.c_uint8),                  # 0xE8         Port Disable (Self)
-      ('PORT_DIS_BP', ctypes.c_uint8),                  # 0xE9         Post Disable (Bus)
-      ('MAX_PWR_SP', ctypes.c_uint8),                   # 0xEA         Max Power (Self)
-      ('MAX_PWR_BP', ctypes.c_uint8),                   # 0xEB         Max Power (Bus)
-      ('HC_MAX_C_SP', ctypes.c_uint8),                  # 0xEC         Hub Controller Max Current (Self)
-      ('HC_MAX_C_BP', ctypes.c_uint8),                  # 0xED         Hub Controller Max Current (Bus)
-      ('PWR_ON_TIME', ctypes.c_uint8),                  # 0xEE         Power-on time
-      ('BOOST_UP', ctypes.c_uint8),                     # 0xEF         Boost_Up
-      ('BOOST_32', ctypes.c_uint8),                     # 0xF0         Boost_3:2
-      ('PRT_SWP', ctypes.c_uint8),                      # 0xF1         Port Swap
-      ('PRTM12', ctypes.c_uint8),                       # 0xF2         Port Map 12
-      ('PRTM3', ctypes.c_uint8),                        # 0xF3         Port Map 3
+      ('SD_MMC_BUS_TIMING', ctypes.c_uint8*(0xDE-0xDB)),# 0xDB  .. 0xDD  SD/MMC Bus Timing Control
+      ('VID', ctypes.c_uint16),                         # 0xDE  .. 0xDF  Hub Vendor ID
+      ('PID', ctypes.c_uint16),                         # 0xE0  .. 0xE1  Hub Product ID
+      ('DID', ctypes.c_uint16),                         # 0xE2  .. 0xE3  Hub Device ID
+      ('CFG_DAT_BYTE1', ctypes.c_uint8),                # 0xE4           Configuration Data Byte 1
+      ('CFG_DAT_BYTE2', ctypes.c_uint8),                # 0xE5           Configuration Data Byte 2
+      ('CFG_DAT_BYTE3', ctypes.c_uint8),                # 0xE6           Configuration Data Byte 3
+      ('NR_DEVICE', ctypes.c_uint8),                    # 0xE7           Non-Removeable Devices
+      ('PORT_DIS_SP', ctypes.c_uint8),                  # 0xE8           Port Disable (Self)
+      ('PORT_DIS_BP', ctypes.c_uint8),                  # 0xE9           Post Disable (Bus)
+      ('MAX_PWR_SP', ctypes.c_uint8),                   # 0xEA           Max Power (Self)
+      ('MAX_PWR_BP', ctypes.c_uint8),                   # 0xEB           Max Power (Bus)
+      ('HC_MAX_C_SP', ctypes.c_uint8),                  # 0xEC           Hub Controller Max Current (Self)
+      ('HC_MAX_C_BP', ctypes.c_uint8),                  # 0xED           Hub Controller Max Current (Bus)
+      ('PWR_ON_TIME', ctypes.c_uint8),                  # 0xEE           Power-on time
+      ('BOOST_UP', ctypes.c_uint8),                     # 0xEF           Boost_Up
+      ('BOOST_32', ctypes.c_uint8),                     # 0xF0           Boost_3:2
+      ('PRT_SWP', ctypes.c_uint8),                      # 0xF1           Port Swap
+      ('PRTM12', ctypes.c_uint8),                       # 0xF2           Port Map 12
+      ('PRTM3', ctypes.c_uint8),                        # 0xF3           Port Map 3
 
       # OTHER CONFIGURATION
-      ('SD_CLK_LIM', ctypes.c_uint8),                   # 0xF4         SD Clock Limit for the Flash Media Controller
-      ('reserved3', ctypes.c_uint8),                    # 0xF5         reserved
-      ('MEDIA_SETTINGS', ctypes.c_uint8),               # 0xF6         SD1 Timeout Configuration
-      ('reserved4', ctypes.c_uint8*(0xFC-0xF7)),        # 0xF7 .. 0xFB reserved
-      ('NVSTORE_SIG', ctypes.c_uint8*(0xFF-0xFC+1))     # 0xFC .. 0xFF Non-Volatile Storage Signature
+      ('SD_CLK_LIM', ctypes.c_uint8),                   # 0xF4           SD Clock Limit for the Flash Media Controller
+      ('reserved3', ctypes.c_uint8),                    # 0xF5           reserved
+      ('MEDIA_SETTINGS', ctypes.c_uint8),               # 0xF6           SD1 Timeout Configuration
+      ('reserved4', ctypes.c_uint8*(0xFC-0xF7)),        # 0xF7  .. 0xFB  reserved
+      ('NVSTORE_SIG', ctypes.c_uint8*(0xFF-0xFC+1)),    # 0xFC  .. 0xFF  Non-Volatile Storage Signature
+
+      # Non Volatile Storage 2 Contents
+      ('CLUN0_ID_STR', ctypes.c_uint8*(0x106-0x100+1)), # 0x100 .. 0x106 LUN 0 Identifier String
+      ('CLUN1_ID_STR', ctypes.c_uint8*(0x10D-0x107+1)), # 0x107 .. 0x10D LUN 1 Identifier String
+      ('CLUN2_ID_STR', ctypes.c_uint8*(0x114-0x10E+1)), # 0x10E .. 0x114 LUN 2 Identifier String
+      ('CLUN3_ID_STR', ctypes.c_uint8*(0x11B-0x115+1)), # 0x115 .. 0x11B LUN 3 Identifier String
+      ('CLUN4_ID_STR', ctypes.c_uint8*(0x122-0x11C+1)), # 0x11C .. 0x122 LUN 4 Identifier String
+      ('reserved5', ctypes.c_uint8*(0x145-0x123+1)),    # 0x123 .. 0x145 reserved
+      ('DYN_NUM_EXT_LUN', ctypes.c_uint8),              # 0x146          Dynamic Number of Extended LUNs
+      ('LUN_DEV_MAP2', ctypes.c_uint8*(0x14B-0x147+1)),  # 0x147 .. 0x14B LUN to Device mapping
+      ('reserved6', ctypes.c_uint8*(0x17B-0x14C+1)),    # 0x14C .. 0x17B reserved
+      ('NVSTORE_SIG2', ctypes.c_uint8*(0x17F-0x17C+1))  # 0x17C .. 0x17F Non-Volatile Storage 2 Signature
       ]
 
     def getStruct(reader_VID, reader_PID, reader_vendorString, reader_productString, reader_serial, scsi_mfg, scsi_product):
@@ -196,12 +150,20 @@ class USB2642Eeprom(object):
         PRTM3 = 0x00,
         SD_CLK_LIM = 0x00,
         MEDIA_SETTINGS = 0x00,
-        NVSTORE_SIG = string_to_uint8_array("ata2", 4, c_string=False, encoding="UTF-8")
+        NVSTORE_SIG = string_to_uint8_array("ata2", 4, c_string=False, encoding="UTF-8"),
         # according to datasheet the signature is "ATA2".
         # But reverse engineering the configuration written with the microchip-tool shows that it should be "ata" instead.
-        
+        CLUN0_ID_STR = string_to_uint8_array("COMBO", 0x106-0x100+1, encoding="UTF-8", padding=0x00),
+        CLUN1_ID_STR = string_to_uint8_array("COMBO", 0x106-0x100+1, encoding="UTF-8", padding=0x00),
+        CLUN2_ID_STR = string_to_uint8_array("COMBO", 0x106-0x100+1, encoding="UTF-8", padding=0x00),
+        CLUN3_ID_STR = string_to_uint8_array("COMBO", 0x106-0x100+1, encoding="UTF-8", padding=0x00),
+        CLUN4_ID_STR = string_to_uint8_array("COMBO", 0x106-0x100+1, encoding="UTF-8", padding=0x00),
+        DYN_NUM_EXT_LUN = 0x00,
+        LUN_DEV_MAP2 = list_to_uint8_array([0xFF, 0xFF, 0xFF, 0xFF], 0x14B-0x147+1),
+        NVSTORE_SIG2 = string_to_uint8_array("ecf1", 0x17F-0x17C+1, encoding="UTF-8", padding=0x00)
       )
-      assert ctypes.sizeof(s) == 256
+      print(ctypes.sizeof(s))
+      assert ctypes.sizeof(s) == 384
       return s
 
 
@@ -261,14 +223,17 @@ class USB2642Eeprom(object):
     )
     buffer = (ctypes.c_uint8*ctypes.sizeof(s))()
     ctypes.memmove(ctypes.addressof(buffer), ctypes.addressof(s), ctypes.sizeof(s))
-    self._write_EEPROM(0x00, buffer)
+#    self._write_EEPROM(0x00, buffer)
+    print(toPrettyHexString(buffer))
 
-    readBuffer = self._read_EEPROM(addr=0, len=256)
-    print(self.i2c.toPrettyHexString(readBuffer))
+    self.i2c.write_config(buffer)
 
-    for i in range(min(ctypes.sizeof(buffer), len(readBuffer))):
-      if buffer[i] != readBuffer[i]:
-        raise VerificationFailedException("Verification of EEPROM contents failed at byte {}".format(i))
+#    readBuffer = self._read_EEPROM(addr=0, len=256)
+#    print(self.i2c.toPrettyHexString(readBuffer))
+#
+#    for i in range(min(ctypes.sizeof(buffer), len(readBuffer))):
+#      if buffer[i] != readBuffer[i]:
+#        raise VerificationFailedException("Verification of EEPROM contents failed at byte {}".format(i))
 
 
 if __name__ == "__main__":

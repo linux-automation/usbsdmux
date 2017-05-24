@@ -4,6 +4,7 @@ import struct
 import ctypes
 import string
 import fcntl
+from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, toPrettyHexString
 
 class FrameLengthException(Exception):
   pass
@@ -134,27 +135,6 @@ class Usb2642I2C(object):
       ("I2cWritePayload", ctypes.c_uint8 * 9)
     ]
 
-  def toPrettyHexString(self, buffer):
-    """Takes a byte-buffer and creates a pretty-looking hex-string from it"""
-
-    if isinstance(buffer, ctypes.Structure):
-      out = ctypes.c_buffer(ctypes.sizeof(buffer))
-      ctypes.memmove(ctypes.addressof(out), ctypes.addressof(buffer), ctypes.sizeof(buffer))
-      b = [ord(x) for x in out]
-    elif isinstance(buffer[0], int):
-      b = [x for x in buffer]
-    else:
-      b = [ord(x) for x in buffer]
-
-    res = ""
-    offs = 0
-    while len(b)>0:
-      slice = b[0:8]
-      b = b[8:]
-      res += "0x{:02X}\t{}  {}\n".format(offs, " ".join(["{:02X}".format(x) for x in slice]), " ".join([chr(x) if chr(x) in string.printable.split(" ")[0] else "." for x in slice]))
-      offs += 8
-    return res
-
 
   def _getScsiCmdI2cWrite(self, slaveAddr, data):
     """
@@ -283,6 +263,35 @@ class Usb2642I2C(object):
       if rc != 0:
         raise IoctlFailed("SG_IO ioctl() failed with non-zero exit-code {}".format(rc))
     return databuffer, sense, sgio
+
+
+  def write_config(self, data):
+    """
+    Writes the eeprom contents from data into the config EEPROM.
+
+    This is done using reverse-engineered magic...
+
+    Arguments:
+    data -- EEPROM blob to write as ctype.buffer
+    """
+
+    scsiCommand = list_to_uint8_array([0xCF, 0x54, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], 16)
+
+    data_prefix = list_to_uint8_array([], 0)
+    data_suffix = list_to_uint8_array([0x00], 127)
+
+    payload = (ctypes.c_uint8*512)()
+    for i in range(ctypes.sizeof(data_prefix)):
+      payload[i] = data_prefix[i]
+    for i in range(ctypes.sizeof(data)):
+      payload[i+ctypes.sizeof(data_prefix)] = data[i]
+    for i in range(ctypes.sizeof(data_suffix)):
+      payload[i+ctypes.sizeof(data_prefix)+ctypes.sizeof(data)] = data_suffix[i]
+
+
+    print(toPrettyHexString(payload))
+
+    self._callIoctl(scsiCommand, self._SG_DXFER_TO_DEV, payload)
 
 
   def writeReadTo(self, i2cAddr, writeData, readLength):
