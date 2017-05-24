@@ -38,14 +38,14 @@ class Pca9536(object):
         # After POR all Pins are Inputs. This value will from now on mirror the value of die _register_configuration
         self._directionMask = 0xFF
 
-    def _writeRegister(self, register, value):
+    def _write_register(self, register, value):
         """
         Writes a register on the Pca9536 with a given value.
         """
 
         self._usb.writeTo(self._I2cAddr, [register, value])
 
-    def setPinToOutput(self, pins):
+    def set_pin_to_output(self, pins):
         """
         Sets the corresponding pins as outputs.
 
@@ -54,9 +54,9 @@ class Pca9536(object):
         """
 
         self._directionMask = self._directionMask & (~pins)
-        self._writeRegister(self._register_configuration, self._directionMask)
+        self._write_register(self._register_configuration, self._directionMask)
 
-    def setPinToInput(self, pins):
+    def set_pin_to_input(self, pins):
         """
         Sets the corresponding pins as inputs.
 
@@ -65,10 +65,10 @@ class Pca9536(object):
         """
 
         self._directionMask = self._directionMask | pin
-        self._writeRegister(self._register_configuration, self._directionMask)
+        self._write_register(self._register_configuration, self._directionMask)
 
 
-    def outputValues(self, values):
+    def output_values(self, values):
         """
         Writes the given values to the GPIO-expander.
         Pins configured as Inputs are not affected by this.
@@ -77,19 +77,6 @@ class Pca9536(object):
         values -- Combination of Pca9536._gpio_*
         """
 
-        self._writeRegister(self._register_outputPort, values)
-
-
-if __name__ == "__main__":
-    import time
-
-    i2c = Pca9536("/dev/sg1")
-    i2c.setPinToOutput(i2c._gpio_0 | i2c._gpio_1 | i2c._gpio_2 | i2c._gpio_3)
-    for _ in range(100):
-        i2c.outputValues(0x00)
-        time.sleep(0.1)
-        i2c.outputValues(0x04)
-        time.sleep(0.1)
-
+        self._write_register(self._register_outputPort, values)
 
 
