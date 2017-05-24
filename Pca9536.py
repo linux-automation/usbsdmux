@@ -2,11 +2,11 @@
 
 import Usb2642I2C
 
+
 class Pca9536(object):
     """
     Interface to control a Pca9536 that is connected to the auxiliary-I2C of a Microchip USB2642.
     """
-
     """The PCA9536 I2C Slave Address in 7-Bit Format"""
     _I2cAddr = 0x41
 
@@ -22,7 +22,7 @@ class Pca9536(object):
     _gpio_3 = 0x08
 
     _direction_output = 0
-    _direction_input  = 1
+    _direction_input = 1
 
     def __init__(self, sg):
         """
@@ -67,7 +67,6 @@ class Pca9536(object):
         self._directionMask = self._directionMask | pin
         self._write_register(self._register_configuration, self._directionMask)
 
-
     def output_values(self, values):
         """
         Writes the given values to the GPIO-expander.
@@ -78,5 +77,3 @@ class Pca9536(object):
         """
 
         self._write_register(self._register_outputPort, values)
-
-

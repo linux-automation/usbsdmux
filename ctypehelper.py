@@ -2,13 +2,17 @@
 
 import ctypes
 import string
-
 """
 This module contains functions related to packing data into ctype arrays in special ways as needed by the Microchip USB2642.
 """
 
-def string_to_uint8_array(str, array_length, c_string=False, padding=0xFF, encoding="UTF-16"):
-  """
+
+def string_to_uint8_array(str,
+                          array_length,
+                          c_string=False,
+                          padding=0xFF,
+                          encoding="UTF-16"):
+    """
   Converts a python-string into a ctypes.c_uint8 array of a given length. The str will be encoded with the given encoding before converting.
 
   If c_string is True the string will be terminated with 0x00.
@@ -22,31 +26,32 @@ def string_to_uint8_array(str, array_length, c_string=False, padding=0xFF, encod
   padding -- This value will be used to pad buffer to the given length.
   """
 
-  # Preparing output array
-  a = (ctypes.c_uint8*array_length)()
-  for i in range(array_length):
-    a[i] = padding
+    # Preparing output array
+    a = (ctypes.c_uint8 * array_length)()
+    for i in range(array_length):
+        a[i] = padding
 
-  # Determine number of bytes to copy
-  bytes = str.encode(encoding)
-  if c_string:
-    count = min(len(bytes), array_length-1)
-  else:
-    count = min(len(bytes), array_length)
+    # Determine number of bytes to copy
+    bytes = str.encode(encoding)
+    if c_string:
+        count = min(len(bytes), array_length - 1)
+    else:
+        count = min(len(bytes), array_length)
 
-  # Do the actual copy
-  for i in range(count):
-    a[i] = int(bytes[i])
+    # Do the actual copy
+    for i in range(count):
+        a[i] = int(bytes[i])
 
-  # Make string a c-string
-  if c_string:
-    i += 1
-    a[i] = 0x00
+    # Make string a c-string
+    if c_string:
+        i += 1
+        a[i] = 0x00
 
-  return a
+    return a
+
 
 def string_to_microchip_unicode_uint8_array(text, array_length, constant=0x03):
-  """
+    """
   Converts a String to a USB2642 UTF-16 string.
 
   The USB2642 requires the first two bytes of the string to be <length including first two bytes><0x03>.
@@ -57,13 +62,14 @@ def string_to_microchip_unicode_uint8_array(text, array_length, constant=0x03):
   constant -- The constant byte placed into the 2nd byte
   """
 
-  a = string_to_uint8_array(text, array_length)
-  a[0] = len(text)*2+2
-  a[1] = constant
-  return a
+    a = string_to_uint8_array(text, array_length)
+    a[0] = len(text) * 2 + 2
+    a[1] = constant
+    return a
+
 
 def list_to_uint8_array(numbers, array_length):
-  """
+    """
   Converts a list of numbers into a ctypes.c_uint8 array of a given length.
 
   If numbers is too short for array_length it will be padded with 0x00.
@@ -74,19 +80,22 @@ def list_to_uint8_array(numbers, array_length):
   array_length -- length of the resulting array
   """
 
-  a = (ctypes.c_uint8*array_length)()
+    a = (ctypes.c_uint8 * array_length)()
 
-  count = min(len(numbers), array_length)
-  for i in range(count):
-    a[i] = int(numbers[i])
-  return a
+    count = min(len(numbers), array_length)
+    for i in range(count):
+        a[i] = int(numbers[i])
+    return a
+
 
 def to_pretty_hex(buffer):
     """Takes a byte-buffer and creates a pretty-looking hex-string from it"""
 
     if isinstance(buffer, ctypes.Structure):
         out = ctypes.c_buffer(ctypes.sizeof(buffer))
-        ctypes.memmove(ctypes.addressof(out), ctypes.addressof(buffer), ctypes.sizeof(buffer))
+        ctypes.memmove(
+            ctypes.addressof(out),
+            ctypes.addressof(buffer), ctypes.sizeof(buffer))
         b = [ord(x) for x in out]
     elif isinstance(buffer[0], int):
         b = [x for x in buffer]
@@ -95,9 +104,13 @@ def to_pretty_hex(buffer):
 
     res = ""
     offs = 0
-    while len(b)>0:
+    while len(b) > 0:
         slice = b[0:8]
         b = b[8:]
-        res += "0x{:02X}\t{}  {}\n".format(offs, " ".join(["{:02X}".format(x) for x in slice]), " ".join([chr(x) if chr(x) in string.printable.split(" ")[0] else "." for x in slice]))
+        res += "0x{:02X}\t{}  {}\n".format(offs, " ".join(
+            ["{:02X}".format(x) for x in slice]), " ".join([
+                chr(x) if chr(x) in string.printable.split(" ")[0] else "."
+                for x in slice
+            ]))
         offs += 8
     return res

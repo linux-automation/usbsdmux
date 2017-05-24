@@ -4,6 +4,7 @@ import argparse
 import Pca9536
 import time
 
+
 class Muxctl(object):
 
     _DAT_enable = 0x00
@@ -25,7 +26,9 @@ class Muxctl(object):
         self.mode_disconnect(wait=False)
 
         # now enabling outputs
-        self._pca.set_pin_to_output(Pca9536.Pca9536._gpio_0 | Pca9536.Pca9536._gpio_1 | Pca9536.Pca9536._gpio_2 | Pca9536.Pca9536._gpio_3)
+        self._pca.set_pin_to_output(
+            Pca9536.Pca9536._gpio_0 | Pca9536.Pca9536._gpio_1 |
+            Pca9536.Pca9536._gpio_2 | Pca9536.Pca9536._gpio_3)
 
     def mode_disconnect(self, wait=True):
         """
@@ -35,10 +38,10 @@ class Muxctl(object):
         wait -- Command will block for some time until the voltage-supply of the sd-card is known to be close to zero
         """
 
-        self._pca.output_values(self._DAT_disable | self._PWR_disable | self._select_HOST | self._card_removed)
+        self._pca.output_values(self._DAT_disable | self._PWR_disable |
+                                self._select_HOST | self._card_removed)
 
         time.sleep(1)
-
 
     def mode_DUT(self, wait=True):
         """
@@ -50,10 +53,12 @@ class Muxctl(object):
         self.mode_disconnect(wait)
 
         # switch selection to DUT first to prevent glitches on power and data-lines
-        self._pca.output_values(self._DAT_disable | self._PWR_disable | self._select_DUT | self._card_removed)
+        self._pca.output_values(self._DAT_disable | self._PWR_disable |
+                                self._select_DUT | self._card_removed)
 
         # now connect data and power
-        self._pca.output_values(self._DAT_enable | self._PWR_enable | self._select_DUT | self._card_removed)
+        self._pca.output_values(self._DAT_enable | self._PWR_enable |
+                                self._select_DUT | self._card_removed)
 
     def mode_host(self, wait=True):
         """
@@ -67,14 +72,16 @@ class Muxctl(object):
         # the disconnect-command has already switched the card to the host. thus we don't need to worry about glitches anymore.
 
         # now connect data and power
-        self._pca.output_values(self._DAT_enable | self._PWR_enable | self._select_HOST | self._card_inserted)
+        self._pca.output_values(self._DAT_enable | self._PWR_enable |
+                                self._select_HOST | self._card_inserted)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("sg", help="/dev/sg* to use")
-    parser.add_argument("mode", help="mode to switch to. Can be {off, DUT, host}")
+    parser.add_argument(
+        "mode", help="mode to switch to. Can be {off, DUT, host}")
 
     args = parser.parse_args()
 
@@ -88,4 +95,3 @@ if __name__ == "__main__":
 
     if args.mode.lower() == "host":
         ctl.mode_host()
-
