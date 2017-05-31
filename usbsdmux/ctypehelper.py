@@ -3,7 +3,8 @@
 import ctypes
 import string
 """
-This module contains functions related to packing data into ctype arrays in special ways as needed by the Microchip USB2642.
+This module contains functions related to packing data into ctype arrays in
+special ways as needed by the Microchip USB2642.
 """
 
 
@@ -13,7 +14,8 @@ def string_to_uint8_array(str,
                           padding=0xFF,
                           encoding="UTF-16"):
     """
-  Converts a python-string into a ctypes.c_uint8 array of a given length. The str will be encoded with the given encoding before converting.
+  Converts a python-string into a ctypes.c_uint8 array of a given length.
+    The str will be encoded with the given encoding before converting.
 
   If c_string is True the string will be terminated with 0x00.
   str will be padded with padding if the buffer is longer than the str.
@@ -22,8 +24,8 @@ def string_to_uint8_array(str,
   Arguments:
   str -- python string
   array_length -- length of the resulting array in bytes.
-  c_string -- Switch to treat a str as c-string. String will be terminated with 0x00
-  padding -- This value will be used to pad buffer to the given length.
+  c_string -- Switch to treat a str as c-string. String will be terminated with
+  0x00 padding -- This value will be used to pad buffer to the given length.
   """
 
     # Preparing output array
@@ -32,15 +34,15 @@ def string_to_uint8_array(str,
         a[i] = padding
 
     # Determine number of bytes to copy
-    bytes = str.encode(encoding)
+    nbytes = str.encode(encoding)
     if c_string:
-        count = min(len(bytes), array_length - 1)
+        count = min(len(nbytes), array_length - 1)
     else:
-        count = min(len(bytes), array_length)
+        count = min(len(nbytes), array_length)
 
     # Do the actual copy
     for i in range(count):
-        a[i] = int(bytes[i])
+        a[i] = int(nbytes[i])
 
     # Make string a c-string
     if c_string:
@@ -54,8 +56,10 @@ def string_to_microchip_unicode_uint8_array(text, array_length, constant=0x03):
     """
   Converts a String to a USB2642 UTF-16 string.
 
-  The USB2642 requires the first two bytes of the string to be <length including first two bytes><0x03>.
-  This function first creates a UTF-16 string and then replaces the byte-order mark with this information.
+  The USB2642 requires the first two bytes of the string to be
+  <length including first two bytes><0x03>.
+  This function first creates a UTF-16 string and then replaces the byte-order
+  mark with this information.
 
   Arguments:
   text -- Text to copy into the array
@@ -92,7 +96,7 @@ def to_pretty_hex(buffer):
     """Takes a byte-buffer and creates a pretty-looking hex-string from it"""
 
     if isinstance(buffer, ctypes.Structure):
-        out = ctypes.c_buffer(ctypes.sizeof(buffer))
+        out = ctypes.create_string_buffer(ctypes.sizeof(buffer))
         ctypes.memmove(
             ctypes.addressof(out),
             ctypes.addressof(buffer), ctypes.sizeof(buffer))
@@ -105,12 +109,12 @@ def to_pretty_hex(buffer):
     res = ""
     offs = 0
     while len(b) > 0:
-        slice = b[0:8]
+        window = b[0:8]
         b = b[8:]
         res += "0x{:02X}\t{}  {}\n".format(offs, " ".join(
-            ["{:02X}".format(x) for x in slice]), " ".join([
+            ["{:02X}".format(x) for x in window]), " ".join([
                 chr(x) if chr(x) in string.printable.split(" ")[0] else "."
-                for x in slice
+                for x in window
             ]))
         offs += 8
     return res

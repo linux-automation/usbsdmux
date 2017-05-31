@@ -2,15 +2,17 @@
 
 import struct
 import ctypes
-import Usb2642I2C
+from .usb2642i2c import Usb2642I2C
 import time
 import argparse
 import sys
-from ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, to_pretty_hex
+from .ctypehelper import string_to_microchip_unicode_uint8_array,\
+  string_to_uint8_array, list_to_uint8_array, to_pretty_hex
 
 
 """
-This module provides the high-level interface needed to write the contents of the configuration-EEPROM of a USB2642 using the USB2642.
+This module provides the high-level interface needed to write the contents of
+the configuration-EEPROM of a USB2642 using the USB2642.
 """
 
 
@@ -29,17 +31,19 @@ class USB2642Eeprom(object):
 
     Arguments:
     sg -- /dev/sg* to use
-    i2c_addr -- 7-Bit Address of the EEPROM to use. Defaults to 0x50 for the configuration-EEPROM. You probably do NOT want to override this.
+    i2c_addr -- 7-Bit Address of the EEPROM to use. Defaults to 0x50 for the
+                configuration-EEPROM. You probably do NOT want to override this.
     """
 
-    self.i2c = Usb2642I2C.Usb2642I2C(sg)
+    self.i2c = Usb2642I2C(sg)
     self.addr = i2c_addr
 
   class _EepromStruct(ctypes.Structure):
     """
     Struct that contains the Configuration of the Card Reader and USB Hub.
     """
-    _pack_ = 1 # forces the struct to be packed tight and overrides the default 4-byte aligned packing.
+    _pack_ = 1 # forces the struct to be packed tight and overrides the default
+               # 4-byte aligned packing.
     _fields_ = [
 
       # Flash Media Controller Configuration
@@ -108,11 +112,13 @@ class USB2642Eeprom(object):
       ('NVSTORE_SIG2', ctypes.c_uint8*(0x17F-0x17C+1))  # 0x17C .. 0x17F Non-Volatile Storage 2 Signature
       ]
 
-    def get_struct(reader_VID, reader_PID, reader_vendorString, reader_productString, reader_serial, scsi_mfg, scsi_product):
+    def get_struct(reader_VID, reader_PID, reader_vendorString,\
+                   reader_productString, reader_serial, scsi_mfg, scsi_product):
       """
       Returns a pre-filled EepromStruct.
 
-      Parameters are taken from the Datasheets defaults if nothing else is mentioned.
+      Parameters are taken from the Datasheets defaults if nothing else is
+      mentioned.
       """
       s = USB2642Eeprom._EepromStruct(
         USB_SER_NUM = string_to_microchip_unicode_uint8_array(reader_serial, 0x19-0x00+1),
@@ -205,7 +211,8 @@ class USB2642Eeprom(object):
       time.sleep(0.1)
       offset = upperOffset+1
 
-  def write(self, VID, PID, product_string, vendor_string, serial, scsi_mfg, scsi_product):
+  def write(self, VID, PID, product_string, vendor_string, serial, scsi_mfg,\
+            scsi_product):
     """
     Writes a configuration to the EEPROM.
 
@@ -218,30 +225,46 @@ class USB2642Eeprom(object):
     """
 
     s = USB2642Eeprom._EepromStruct.get_struct(
-      reader_VID=int(args.VID, base=16),
-      reader_PID=int(args.PID, base=16),
-      reader_productString=args.productString,
-      reader_vendorString=args.manufacturerString,
-      reader_serial = args.serial,
+      reader_VID=VID,
+      reader_PID=PID,
+      reader_productString=product_string,
+      reader_vendorString=vendor_string,
+      reader_serial = serial,
       scsi_mfg = scsi_mfg,
       scsi_product = scsi_product
     )
     buffer = (ctypes.c_uint8*ctypes.sizeof(s))()
-    ctypes.memmove(ctypes.addressof(buffer), ctypes.addressof(s), ctypes.sizeof(s))
+    ctypes.memmove(ctypes.addressof(buffer), ctypes.addressof(s),\
+                   ctypes.sizeof(s))
 
     self.i2c.write_config(buffer)
 
+def main():
+  parser = argparse.ArgumentParser(description=\
+             "This tool writes and verifies the configuration EEPROM of the usb-sd-mux with the information given on the command line.")
+  parser.add_argument("sg",\
+                      help="The /dev/sg* to use")
+  parser.add_argument("--productString",\
+                      help="Product-Name to write.",\
+                      default="usb-sd-mux_rev1")
+  parser.add_argument("--manufacturerString",\
+                      help="Manufacturer-Name to write.",\
+                      default="Pengutronix")
+  parser.add_argument("--VID",\
+                      help="USB Vendor ID",\
+                      default="0x0424")
+  parser.add_argument("--ScsiManufacturer",\
+                      help="Value for the SCSI Manufacturer to write",\
+                      default="PTX")
+  parser.add_argument("--ScsiProduct",\
+                      help="Value für the SCSI Product Name to write",\
+                      default="sdmux")
+  parser.add_argument("--PID",\
+                      help="USB Product ID",\
+                      default="0x4041")
+  parser.add_argument("serial",\
+                      help="Serial-Number to write. Should be unique.")
 
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser(description="This tool writes and verifies the configuration EEPROM of the usb-sd-mux with the information given on the command line.")
-  parser.add_argument("sg", help="The /dev/sg* to use")
-  parser.add_argument("--productString", help="Product-Name to write.", default="usb-sd-mux_rev1")
-  parser.add_argument("--manufacturerString", help="Manufacturer-Name to write.", default="Pengutronix")
-  parser.add_argument("--VID", help="USB Vendor ID", default="0x0424")
-  parser.add_argument("--ScsiManufacturer", help="Value for the SCSI Manufacturer to write", default="PTX")
-  parser.add_argument("--ScsiProduct", help="Value für the SCSI Product Name to write", default="sdmux")
-  parser.add_argument("--PID", help="USB Product ID", default="0x4041")
-  parser.add_argument("serial", help="Serial-Number to write. Should be unique.")
   args = parser.parse_args()
 
   c = USB2642Eeprom(args.sg)
@@ -257,3 +280,7 @@ if __name__ == "__main__":
   )
 
   print("Write completed")
+
+
+if __name__ == "__main__":
+  main()
