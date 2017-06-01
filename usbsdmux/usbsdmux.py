@@ -5,6 +5,9 @@ import time
 
 
 class UsbSdMux(object):
+  """
+  Class to provide an interface for the multiplexer on an usb-sd-mux.
+  """
 
   _DAT_enable = 0x00
   _DAT_disable = Pca9536._gpio_0
@@ -19,6 +22,12 @@ class UsbSdMux(object):
   _card_removed = Pca9536._gpio_3
 
   def __init__(self, sg):
+    """
+    Create a new UsbSdMux.
+
+    Arguments:
+    sg -- /dev/sg* to use
+    """
     self._pca = Pca9536(sg)
 
     # setting the output-values to defaults before enabling outputs on the GPIO-expander

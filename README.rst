@@ -14,8 +14,8 @@ High-Level Functions
 --------------------
 usbsdmux provides the following functions:
 
-* Multiplexing the SD-Card to either DUT, Host or disconnect.
-* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device.
+* Multiplexing the SD-Card to either DUT, Host or disconnect with :code:`usbsdmux`
+* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device: :code:`usbsdmux-configure`
 
 
 Low-Level Functions
@@ -29,4 +29,8 @@ Under the hood this tool provides interfaces to access the following features of
 
 Access to /dev/sg*
 ------------------
-tbd.
+Access to /dev/sg* needs the `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_. By default all processes created by root gain this capability.
+
+Since you do not want to give this capability to the Python interpreter you need to call the scripts as root.
+A call to a shell-wrapper inside a virutalenv would look something like:
+:code:`sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT`
