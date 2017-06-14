@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="usbsdmux",
-    version="0.1.0",
+    version="0.1.1",
     description="Tool to control an usb-sd-mux from the command line",
     packages=['usbsdmux'],
     entry_points={
