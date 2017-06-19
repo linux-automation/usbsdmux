@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]", ATTRS{manufacturer}=="Pengutronix", ATTRS{product}=="usb-sd-mux*", SYMLINK="$attr{product}/id-$attr{serial}"
