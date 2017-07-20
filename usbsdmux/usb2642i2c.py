@@ -2,13 +2,9 @@
 
 import ctypes
 import fcntl
-<<<<<<< HEAD
-from .ctypehelper import string_to_microchip_unicode_uint8_array, string_to_uint8_array, list_to_uint8_array, to_pretty_hex
-=======
 from .ctypehelper import string_to_microchip_unicode_uint8_array,\
   string_to_uint8_array, list_to_uint8_array, to_pretty_hex
 import platform
->>>>>>> e6d9835... fixup! Refactoring Repository as python-module for usbSdMux
 
 
 """
@@ -258,7 +254,7 @@ class Usb2642I2C(object):
                   # pointer to data transfer buffer
                   dxferp=ctypes.cast(databuffer, ctypes.c_void_p),
                   # command to perform
-                  cmdp=ctypes.addressof(command),
+                  cmdp=ctypes.cast(ctypes.addressof(command), ctypes.c_void_p),
                   # sense buffer memory
                   sbp=ctypes.cast(sense, ctypes.c_void_p),
                   # a timeout for this command in ms
@@ -287,7 +283,10 @@ class Usb2642I2C(object):
                   duration=0,
                   # output: auxiliary information (?)
                   info=0)
-    assert ctypes.sizeof(sgio) == 88
+    if platform.machine() == "i686":
+      assert ctypes.sizeof(sgio) == 64
+    else:
+      assert ctypes.sizeof(sgio) == 88
     return sgio, sense
 
 
