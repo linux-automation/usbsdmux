@@ -18,10 +18,10 @@ class Pca9536(object):
   _register_polarity = 0x02
   _register_configuration = 0x03
 
-  _gpio_0 = 0x01
-  _gpio_1 = 0x02
-  _gpio_2 = 0x04
-  _gpio_3 = 0x08
+  gpio_0 = 0x01
+  gpio_1 = 0x02
+  gpio_2 = 0x04
+  gpio_3 = 0x08
 
   _direction_output = 0
   _direction_input = 1
@@ -53,7 +53,7 @@ class Pca9536(object):
     Sets the corresponding pins as outputs.
 
     Arguments:
-    pins -- Combination of Pca9536._gpio_*
+    pins -- Combination of Pca9536.gpio_*
     """
 
     self._directionMask = self._directionMask & (~pins)
@@ -64,7 +64,7 @@ class Pca9536(object):
     Sets the corresponding pins as inputs.
 
     Arguments:
-    pins -- Combination of Pca9536._gpio_*
+    pins -- Combination of Pca9536.gpio_*
     """
 
     self._directionMask = self._directionMask | pin
@@ -76,7 +76,7 @@ class Pca9536(object):
     Pins configured as Inputs are not affected by this.
 
     Arguments:
-    values -- Combination of Pca9536._gpio_*
+    values -- Combination of Pca9536.gpio_*
     """
 
     self._write_register(self._register_outputPort, values)
