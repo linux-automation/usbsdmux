@@ -1,6 +1,7 @@
 Welcome to usbsdmux
 ===================
 
+|license|
 
 Purpose
 -------
@@ -34,3 +35,8 @@ Access to /dev/sg* needs the `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man
 Since you do not want to give this capability to the Python interpreter you need to call the scripts as root.
 A call to a shell-wrapper inside a virutalenv would look something like:
 :code:`sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT`
+
+
+.. |license| image:: https://img.shields.io/badge/license-LGPLv2.1-blue.svg
+    :alt: LGPLv2.1
+    :target: https://raw.githubusercontent.com/pengutronix/usb-sd-mux-ctl/master/LICENSE
