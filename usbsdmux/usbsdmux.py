@@ -89,23 +89,3 @@ class UsbSdMux(object):
     self._pca.output_values(self._DAT_enable | self._PWR_enable |
                             self._select_HOST | self._card_inserted)
 
-
-if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-
-  parser.add_argument("sg", help="/dev/sg* to use")
-  parser.add_argument(
-      "mode", help="mode to switch to. Can be {off, DUT, host}")
-
-  args = parser.parse_args()
-
-  ctl = Muxctl(args.sg)
-
-  if args.mode.lower() == "off":
-      ctl.mode_disconnect()
-
-  if args.mode.lower() == "dut":
-      ctl.mode_DUT()
-
-  if args.mode.lower() == "host":
-      ctl.mode_host()

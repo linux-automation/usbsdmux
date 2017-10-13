@@ -10,8 +10,9 @@ def main():
     parser.add_argument("sg", help="/dev/sg* to use")
     parser.add_argument(
         "mode",
-        help="mode to switch to. Can be {off, DUT, host}",
-        choices=["dut", "host", "off", "client"])
+        help="mode to switch to",
+        choices=["dut", "host", "off", "client"],
+        type=str.lower)
 
     args = parser.parse_args()
 
