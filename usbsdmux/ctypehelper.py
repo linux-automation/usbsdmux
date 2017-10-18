@@ -24,14 +24,14 @@ def string_to_uint8_array(str,
   Arguments:
   str -- python string
   array_length -- length of the resulting array in bytes.
-  c_string -- Switch to treat a str as c-string. String will be terminated with
-  0x00 padding -- This value will be used to pad buffer to the given length.
+  c_string -- Switch to treat a str as c-string. String will be terminated with 0x00
+  padding -- This value will be used to pad buffer to the given length.
   """
 
     # Preparing output array
-    a = (ctypes.c_uint8 * array_length)()
+    byte_buf = (ctypes.c_uint8 * array_length)()
     for i in range(array_length):
-        a[i] = padding
+        byte_buf[i] = padding
 
     # Determine number of bytes to copy
     nbytes = str.encode(encoding)
@@ -42,14 +42,14 @@ def string_to_uint8_array(str,
 
     # Do the actual copy
     for i in range(count):
-        a[i] = int(nbytes[i])
+        byte_buf[i] = int(nbytes[i])
 
     # Make string a c-string
     if c_string:
         i += 1
-        a[i] = 0x00
+        byte_buf[i] = 0x00
 
-    return a
+    return byte_buf
 
 
 def string_to_microchip_unicode_uint8_array(text, array_length, constant=0x03):
@@ -66,10 +66,10 @@ def string_to_microchip_unicode_uint8_array(text, array_length, constant=0x03):
   constant -- The constant byte placed into the 2nd byte
   """
 
-    a = string_to_uint8_array(text, array_length)
-    a[0] = len(text) * 2 + 2
-    a[1] = constant
-    return a
+    byte_buf = string_to_uint8_array(text, array_length)
+    byte_buf[0] = len(text) * 2 + 2
+    byte_buf[1] = constant
+    return byte_buf
 
 
 def list_to_uint8_array(numbers, array_length):
@@ -84,12 +84,12 @@ def list_to_uint8_array(numbers, array_length):
   array_length -- length of the resulting array
   """
 
-    a = (ctypes.c_uint8 * array_length)()
+    byte_buf = (ctypes.c_uint8 * array_length)()
 
     count = min(len(numbers), array_length)
     for i in range(count):
-        a[i] = int(numbers[i])
-    return a
+        byte_buf[i] = int(numbers[i])
+    return byte_buf
 
 
 def to_pretty_hex(buffer):
@@ -100,17 +100,17 @@ def to_pretty_hex(buffer):
         ctypes.memmove(
             ctypes.addressof(out),
             ctypes.addressof(buffer), ctypes.sizeof(buffer))
-        b = [ord(x) for x in out]
+        temp_buf = [ord(x) for x in out]
     elif isinstance(buffer[0], int):
-        b = [x for x in buffer]
+        temp_buf = [x for x in buffer]
     else:
-        b = [ord(x) for x in buffer]
+        temp_buf = [ord(x) for x in buffer]
 
     res = ""
     offs = 0
-    while len(b) > 0:
-        window = b[0:8]
-        b = b[8:]
+    while len(temp_buf) > 0:
+        window = temp_buf[0:8]
+        temp_buf = temp_buf[8:]
         res += "0x{:02X}\t{}  {}\n".format(offs, " ".join(
             ["{:02X}".format(x) for x in window]), " ".join([
                 chr(x) if chr(x) in string.printable.split(" ")[0] else "."
