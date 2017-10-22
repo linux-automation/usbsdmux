@@ -67,7 +67,7 @@ class Pca9536(object):
     pins -- Combination of Pca9536.gpio_*
     """
 
-    self._directionMask = self._directionMask | pin
+    self._directionMask = self._directionMask | pins
     self._write_register(self._register_configuration, self._directionMask)
 
   def output_values(self, values):
