@@ -243,27 +243,27 @@ def main():
   parser = argparse.ArgumentParser(description=\
              "This tool writes and verifies the configuration EEPROM of the usb-sd-mux with the information given on the command line.")
   parser.add_argument("sg",\
-                      help="The /dev/sg* to use")
+                      help="The /dev/sg* which is used.")
   parser.add_argument("--productString",\
-                      help="Product-Name to write.",\
+                      help="Sets the product name that will be written.",\
                       default="usb-sd-mux_rev1")
   parser.add_argument("--manufacturerString",\
-                      help="Manufacturer-Name to write.",\
+                      help="Sets the manufacturerString that will be written.",\
                       default="Pengutronix")
   parser.add_argument("--VID",\
-                      help="USB Vendor ID",\
+                      help="Sets the VID that will be written.",\
                       default="0x0424")
   parser.add_argument("--ScsiManufacturer",\
-                      help="Value for the SCSI Manufacturer to write",\
+                      help="Sets the ScsiManufacturer that will be written.",\
                       default="PTX")
   parser.add_argument("--ScsiProduct",\
-                      help="Value für the SCSI Product Name to write",\
+                      help="Sets the ScsiProduct that will be written.",\
                       default="sdmux")
   parser.add_argument("--PID",\
-                      help="USB Product ID",\
+                      help="Sets the USB-PIC that will be written.",\
                       default="0x4041")
   parser.add_argument("serial",\
-                      help="Serial-Number to write. Should be unique.")
+                      help="Sets the Serial Number that will be written.")
 
   args = parser.parse_args()
 
