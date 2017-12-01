@@ -13,6 +13,7 @@ setup(
         'console_scripts': [
             'usbsdmux = usbsdmux.__main__:main',
             'usbsdmux-configure = usbsdmux.usb2642eeprom:main',
+            'usbsdmux-service = usbsdmux.service:main',
         ]
     },
 )
