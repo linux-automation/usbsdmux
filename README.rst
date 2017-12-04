@@ -27,14 +27,51 @@ Under the hood this tool provides interfaces to access the following features of
 * Writing an I2C Configuration-EEPROM on the configuration I2C.
   This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
 
+Using as root
+-------------
+If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
+can just use :code:`usbsdmux` as root.
 
-Access to /dev/sg*
-------------------
+If you have installed this tool inside a virutalenv you can just call the
+shell-wrapper with something like
+:code:`sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT`.
+
+
+Using as non-root user
+----------------------
 Access to /dev/sg* needs the `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_. By default all processes created by root gain this capability.
 
-Since you do not want to give this capability to the Python interpreter you need to call the scripts as root.
-A call to a shell-wrapper inside a virutalenv would look something like:
-:code:`sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT`
+Since you do not want to give this capability to the Python interpreter you
+
+* either need to call the scripts as root
+* or use the systemd-service.
+
+The systemd-service is intended to be used with socket-activation.
+The service is present inside :code:`usbsdmux-service`.
+To use this service from a non-root user call something like
+:code:`usbsdmux -c /dev/sg1 DUT`.
+
+The systemd-units provided in :code:`contrib/systemd/` show an example of how to
+set up the service with systemd and socket-activation.
+
+
+Reliable names for the USB-SD-Mux
+---------------------------------
+
+A USB-SD-Mux comes with a pre-programmed serial that is also printed on the
+device itself. With the udev-rule in :code:`contib/udev/99-usbsdmux.rules`
+the sg-device for every USB-SD-Mux is linked to a device in
+:code:`/dev/usb-sd-mux/id-*`.
+
+This makes sure you can access a USB-SD-Mux with the same name - independent
+of the order they are connected or the USB or the USB-topology.
+
+ToDo
+----
+
+* Access to /dev/sg* needs the
+  `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_.
+  The service should drop all not needed capabilities after it is started.
 
 
 .. |license| image:: https://img.shields.io/badge/license-LGPLv2.1-blue.svg
