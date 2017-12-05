@@ -1,0 +1,11 @@
+[Unit]
+Description=USB-SD-Mux Proxy-Service
+After=network.target usbsdmux.socket
+Requires=usbsdmux.socket
+
+[Service]
+Type=simple
+ExecStart=/path/to/usb-sd-mux/.venv/bin/usbsdmux-service
+
+[Install]
+WantedBy=multi-user.target
