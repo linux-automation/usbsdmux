@@ -3,6 +3,29 @@
 from .usbsdmux import UsbSdMux
 import argparse
 import sys, errno
+import json
+import socket
+import os
+
+def direct_mode(sg, mode):
+    ctl = UsbSdMux(sg)
+
+    if mode.lower() == "off":
+        ctl.mode_disconnect()
+    elif mode.lower() == "dut" or args.mode.lower() == "client":
+        ctl.mode_DUT()
+    elif mode.lower() == "host":
+        ctl.mode_host()
+
+def client_mode(sg, mode, socket_path):
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    sock.connect(socket_path)
+    payload = dict()
+    payload["mode"] = mode
+    payload["sg"] = sg
+    sock.send(json.dumps(payload).encode())
+    print(sock.recv(4096).decode())
+    sock.close()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -13,20 +36,39 @@ def main():
         help="mode to switch to",
         choices=["dut", "host", "off", "client"],
         type=str.lower)
+    parser.add_argument(
+        "-d",
+        "--direct",
+        help="Forces to run in direct mode.",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "-c",
+        "--client",
+        help="Force to run in client mode with socket /tmp/sdmux.sock",
+        action="store_true",
+        default=False)
+    parser.add_argument(
+        "-s",
+        "--socket",
+        help="Overrides the default socket for client mode.",
+        default="/tmp/sdmux.sock")
 
     args = parser.parse_args()
 
-    ctl = UsbSdMux(args.sg)
+    if args.client is True and args.direct is True:
+        print("Can not run in direkt and client mode at the same time. Exiting.")
+        exit(1)
 
-    if args.mode.lower() == "off":
-        ctl.mode_disconnect()
+    if args.client is True:
+        client_mode(args.sg, args.mode, args.socket)
+    elif args.direct is True:
+        direct_mode(args.sg, args.mode)
+    else:
+        if os.getresuid()[0] == 0:
+            direct_mode(args.sg, args.mode)
+        else:
+            client_mode(args.sg, args.mode, args.socket)
 
-    elif args.mode.lower() == "dut" or args.mode.lower() == "client":
-        ctl.mode_DUT()
-
-    elif args.mode.lower() == "host":
-        ctl.mode_host()
-
-    sys.exit()
 if __name__ == "__main__":
     main()
