@@ -12,7 +12,7 @@ def direct_mode(sg, mode):
 
     if mode.lower() == "off":
         ctl.mode_disconnect()
-    elif mode.lower() == "dut" or args.mode.lower() == "client":
+    elif mode.lower() == "dut" or mode.lower() == "client":
         ctl.mode_DUT()
     elif mode.lower() == "host":
         ctl.mode_host()
