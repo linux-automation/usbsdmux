@@ -15,8 +15,8 @@ High-Level Functions
 --------------------
 usbsdmux provides the following functions:
 
-* Multiplexing the SD-Card to either DUT, Host or disconnect with :code:`usbsdmux`
-* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device: :code:`usbsdmux-configure`
+* Multiplexing the SD-Card to either DUT, Host or disconnect with ``usbsdmux``
+* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device: ``usbsdmux-configure``
 
 
 Low-Level Functions
@@ -27,14 +27,44 @@ Under the hood this tool provides interfaces to access the following features of
 * Writing an I2C Configuration-EEPROM on the configuration I2C.
   This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
 
+Quickstart
+----------
+
+Clone the git repository:
+
+.. code-block:: bash
+
+   $ git clone https://github.com/pengutronix/usbsdmux.git
+
+Create and activate a virtualenv for usbsdmux:
+
+.. code-block:: bash
+
+   $ virtualenv -p python3 venv
+   $ source venv/bin/activate
+
+Install usbsdmux into the virtualenv:
+
+.. code-block:: bash
+
+   $ python setup.py install
+
+Now you can run ``usbsdmux`` command by giving the appropriate /dev/sg* device,
+e.g.:
+
+.. code-block:: bash
+
+   $ usbsdmux /dev/sg1 dut
+   $ usbsdmux /dev/sg1 host
+
 Using as root
 -------------
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
-can just use :code:`usbsdmux` as root.
+can just use ``usbsdmux`` as root.
 
 If you have installed this tool inside a virutalenv you can just call the
 shell-wrapper with something like
-:code:`sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT`.
+``sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT``.
 
 
 Using as non-root user
@@ -47,11 +77,11 @@ Since you do not want to give this capability to the Python interpreter you
 * or use the systemd-service.
 
 The systemd-service is intended to be used with socket-activation.
-The service is present inside :code:`usbsdmux-service`.
+The service is present inside ``usbsdmux-service``.
 To use this service from a non-root user call something like
-:code:`usbsdmux -c /dev/sg1 DUT`.
+``usbsdmux -c /dev/sg1 DUT``.
 
-The systemd-units provided in :code:`contrib/systemd/` show an example of how to
+The systemd-units provided in ``contrib/systemd/`` show an example of how to
 set up the service with systemd and socket-activation.
 
 
@@ -59,9 +89,9 @@ Reliable names for the USB-SD-Mux
 ---------------------------------
 
 A USB-SD-Mux comes with a pre-programmed serial that is also printed on the
-device itself. With the udev-rule in :code:`contib/udev/99-usbsdmux.rules`
+device itself. With the udev-rule in ``contib/udev/99-usbsdmux.rules``
 the sg-device for every USB-SD-Mux is linked to a device in
-:code:`/dev/usb-sd-mux/id-*`.
+``/dev/usb-sd-mux/id-*``.
 
 This makes sure you can access a USB-SD-Mux with the same name - independent
 of the order they are connected or the USB or the USB-topology.
