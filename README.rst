@@ -27,6 +27,36 @@ Under the hood this tool provides interfaces to access the following features of
 * Writing an I2C Configuration-EEPROM on the configuration I2C.
   This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
 
+Quickstart
+----------
+
+Clone the git repository:
+
+.. code-block:: bash
+
+   $ git clone https://github.com/pengutronix/usbsdmux.git
+
+Create and activate a virtualenv for usbsdmux:
+
+.. code-block:: bash
+
+   $ virtualenv -p python3 venv
+   $ source venv/bin/activate
+
+Install usbsdmux into the virtualenv:
+
+.. code-block:: bash
+
+   $ python setup.py install
+
+Now you can run ``usbsdmux`` command by giving the appropriate /dev/sg* device,
+e.g.:
+
+.. code-block:: bash
+
+   $ usbsdmux /dev/sg1 dut
+   $ usbsdmux /dev/sg1 host
+
 Using as root
 -------------
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
