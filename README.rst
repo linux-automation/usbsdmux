@@ -78,12 +78,26 @@ Since you do not want to give this capability to the Python interpreter you
 
 The systemd-service is intended to be used with socket-activation.
 The service is present inside ``usbsdmux-service``.
-To use this service from a non-root user call something like
-``usbsdmux -c /dev/sg1 DUT``.
 
 The systemd-units provided in ``contrib/systemd/`` show an example of how to
 set up the service with systemd and socket-activation.
+You may adapt and copy them into your machine's local systemd service folder
+``/etc/lib/systemd/system/``
 
+To start the socket unit and let it create the required socket path
+(requires permissions), run::
+
+  systemctl start usbsdmux.socket
+
+Now you can use the ``usbsdmux`` tool from a non-root user by calling it with
+the client ``-c`` argument, e.g.::
+
+  usbsdmux -c /dev/sg1 DUT
+
+If you use a non-standard socket path (i.e. not ``/tmp/sdmux.sock``) you also
+need to explicitly set the socket path::
+
+  usbsdmux -c -s /path/to/sock.file /dev/sg1 DUT
 
 Reliable names for the USB-SD-Mux
 ---------------------------------
