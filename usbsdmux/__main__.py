@@ -31,8 +31,12 @@ def client_mode(sg, mode, socket_path):
     payload["mode"] = mode
     payload["sg"] = sg
     sock.send(json.dumps(payload).encode())
-    print(sock.recv(4096).decode())
+    answer = json.loads(sock.recv(4096).decode())
     sock.close()
+    if 'text' in answer:
+        print(answer['text'])
+    if not 'error' in answer or answer['error']:
+        exit(1)
 
 def main():
     parser = argparse.ArgumentParser()
