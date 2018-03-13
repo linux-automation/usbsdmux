@@ -19,13 +19,24 @@ def direct_mode(sg, mode):
 
 def client_mode(sg, mode, socket_path):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
-    sock.connect(socket_path)
+    try:
+        sock.connect(socket_path)
+    except FileNotFoundError:
+        print("Socket path %s does not exist. Exiting." % socket_path)
+        exit(1)
+    except socket.error as ex:
+        print("Failed opening socket %s : %s. Exiting" % (socket_path, ex))
+        exit(1)
     payload = dict()
     payload["mode"] = mode
     payload["sg"] = sg
     sock.send(json.dumps(payload).encode())
-    print(sock.recv(4096).decode())
+    answer = json.loads(sock.recv(4096).decode())
     sock.close()
+    if 'text' in answer:
+        print(answer['text'])
+    if not 'error' in answer or answer['error']:
+        exit(1)
 
 def main():
     parser = argparse.ArgumentParser()
