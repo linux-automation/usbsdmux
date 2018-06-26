@@ -41,7 +41,7 @@ def client_mode(sg, mode, socket_path):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("sg", help="/dev/sg* to use")
+    parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
     parser.add_argument(
         "mode",
         help="mode to switch to",
