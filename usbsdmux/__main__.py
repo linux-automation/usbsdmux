@@ -25,7 +25,7 @@ def client_mode(sg, mode, socket_path):
         print("Socket path %s does not exist. Exiting." % socket_path)
         exit(1)
     except socket.error as ex:
-        print("Failed opening socket %s : %s. Exiting" % (socket_path, ex))
+        print("Failed opening socket %s : %s. Exiting." % (socket_path, ex))
         exit(1)
     payload = dict()
     payload["mode"] = mode
@@ -68,7 +68,7 @@ def main():
     args = parser.parse_args()
 
     if args.client is True and args.direct is True:
-        print("Can not run in direkt and client mode at the same time. Exiting.")
+        print("Can not run in direct and client mode at the same time. Exiting.")
         exit(1)
 
     if args.client is True:
