@@ -22,10 +22,10 @@ def client_mode(sg, mode, socket_path):
     try:
         sock.connect(socket_path)
     except FileNotFoundError:
-        print("Socket path %s does not exist. Exiting." % socket_path)
+        print("Socket path %s does not exist. Exiting." % socket_path, file=sys.stderr)
         exit(1)
     except socket.error as ex:
-        print("Failed opening socket %s : %s. Exiting" % (socket_path, ex))
+        print("Failed opening socket %s : %s. Exiting." % (socket_path, ex), file=sys.stderr)
         exit(1)
     payload = dict()
     payload["mode"] = mode
@@ -41,7 +41,7 @@ def client_mode(sg, mode, socket_path):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("sg", help="/dev/sg* to use")
+    parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
     parser.add_argument(
         "mode",
         help="mode to switch to",
@@ -68,7 +68,7 @@ def main():
     args = parser.parse_args()
 
     if args.client is True and args.direct is True:
-        print("Can not run in direkt and client mode at the same time. Exiting.")
+        print("Can not run in direct and client mode at the same time. Exiting.", file=sys.stderr)
         exit(1)
 
     if args.client is True:

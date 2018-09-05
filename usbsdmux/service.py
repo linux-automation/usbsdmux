@@ -6,6 +6,7 @@ import time
 import argparse
 import json
 import os
+import sys
 
 """
 This service is intended as systemd-socket-activated unit and provides an
@@ -109,8 +110,8 @@ def main():
         except FileNotFoundError:
             pass
         except PermissionError as e:
-            print(e)
-            print("Could not remove old socket. Correct access rights?")
+            print(e, file=sys.stderr)
+            print("Could not remove old socket. Correct access rights?", file=sys.stderr)
             exit(-1)
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
         sock.bind(sock_name)
