@@ -285,6 +285,8 @@ class Usb2642I2C(object):
                   info=0)
     if platform.machine() == "i686":
       assert ctypes.sizeof(sgio) == 64
+    elif platform.machine() == "armv7l":
+      assert ctypes.sizeof(sgio) == 64
     else:
       assert ctypes.sizeof(sgio) == 88
     return sgio, sense
