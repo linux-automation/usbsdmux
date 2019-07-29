@@ -62,7 +62,7 @@ Using as root
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
 can just use ``usbsdmux`` as root.
 
-If you have installed this tool inside a virutalenv you can just call the
+If you have installed this tool inside a virtualenv you can just call the
 shell-wrapper with something like
 ``sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT``.
 
