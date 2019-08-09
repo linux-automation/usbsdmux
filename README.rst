@@ -82,7 +82,7 @@ The service is present inside ``usbsdmux-service``.
 The systemd-units provided in ``contrib/systemd/`` show an example of how to
 set up the service with systemd and socket-activation.
 You may adapt and copy them into your machine's local systemd service folder
-``/etc/lib/systemd/system/``
+``/etc/systemd/system/``
 
 To start the socket unit and let it create the required socket path
 (requires permissions), run::
