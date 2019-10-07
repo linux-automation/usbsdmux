@@ -237,12 +237,11 @@ class Usb2642I2C(object):
     Sg_Dxfer -- _SG_DXFER_* to set the direction of the SCSI transfer.
     databuffer -- 512 bytes buffer of the block to read or write.
     """
-    ASCII_S = 83
     sense = ctypes.c_buffer(64)
 
     sgio = self._SgioHdrStruct(
                   # "S" for SCSI
-                  interface_id=ASCII_S,
+                  interface_id=ord('S'),
                   # SG_DXFER_*
                   dxfer_direction=Sg_Dxfer,
                   # length of whatever we put into cmd
