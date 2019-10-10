@@ -4,7 +4,6 @@ import ctypes
 import fcntl
 from .ctypehelper import string_to_microchip_unicode_uint8_array,\
   string_to_uint8_array, list_to_uint8_array, to_pretty_hex
-import platform
 
 
 """
@@ -97,6 +96,18 @@ class Usb2642I2C(object):
         ('duration', ctypes.c_uint),
         ('info', ctypes.c_uint)]
 
+  # sg_io_hdr_t contains 9 ints, 3 short ints, 6 chars and 4 pointers. So its
+  # size is 9 * 4 + 3 * 2 + 6 * 1 + 4 * 4 = 64 on 32 bit architectures. On 64
+  # bit architectures there are two holes in the struct:
+  # - 4 bytes before *usr_ptr to make the pointer aligned
+  # - 4 bytes at the end to make the size a multiple of 8.
+  # So the size there is: 9 * 4 + 3 * 2 + 6 * 1 + 4 * 8 + 2 * 4 = 88.
+  if ctypes.sizeof(ctypes.c_void_p) == 4:
+    assert ctypes.sizeof(_SgioHdrStruct) == 64
+  else:
+    assert ctypes.sizeof(ctypes.c_void_p) == 8
+    assert ctypes.sizeof(_SgioHdrStruct) == 88
+
   """IOCTL for SG_IO"""
   _SG_IO = 0x2285  # <scsi/sg.h>
 
@@ -144,6 +155,8 @@ class Usb2642I2C(object):
       ("I2cCommandPayload", ctypes.c_uint8 * 9)
     ]
 
+  assert ctypes.sizeof(_USB2642I2cWriteStruct) == 16
+
   class _USB2642I2cReadStruct(ctypes.Structure):
     """
     I2C-Read Data Structure for up to 512 Bytes of Data.
@@ -161,6 +174,8 @@ class Usb2642I2C(object):
       ("I2cWritePhaseLen", ctypes.c_uint8),
       ("I2cWritePayload", ctypes.c_uint8 * 9)
     ]
+
+  assert ctypes.sizeof(_USB2642I2cReadStruct) == 16
 
 
   def _get_SCSI_cmd_I2C_write(self, slaveAddr, data):
@@ -189,7 +204,6 @@ class Usb2642I2C(object):
       I2cCommandPhaseLen = 0x00,
       I2cCommandPayload = (ctypes.c_uint8*9)())
 
-    assert ctypes.sizeof(cmd) == 16
     return cmd, dataArray
 
   def _get_SCSI_cmd_I2C_write_read(self, slaveAddr, writeData, readLength):
@@ -223,7 +237,6 @@ class Usb2642I2C(object):
       I2cWritePhaseLen = writeCount,
       I2cCommandPayload = writeDataArray)
 
-    assert ctypes.sizeof(cmd) == 16
     return cmd, readDataArray
 
 
@@ -237,12 +250,11 @@ class Usb2642I2C(object):
     Sg_Dxfer -- _SG_DXFER_* to set the direction of the SCSI transfer.
     databuffer -- 512 bytes buffer of the block to read or write.
     """
-    ASCII_S = 83
     sense = ctypes.c_buffer(64)
 
     sgio = self._SgioHdrStruct(
                   # "S" for SCSI
-                  interface_id=ASCII_S,
+                  interface_id=ord('S'),
                   # SG_DXFER_*
                   dxfer_direction=Sg_Dxfer,
                   # length of whatever we put into cmd
@@ -283,12 +295,7 @@ class Usb2642I2C(object):
                   duration=0,
                   # output: auxiliary information (?)
                   info=0)
-    if platform.machine() == "i686":
-      assert ctypes.sizeof(sgio) == 64
-    elif platform.machine() == "armv7l":
-      assert ctypes.sizeof(sgio) == 64
-    else:
-      assert ctypes.sizeof(sgio) == 88
+
     return sgio, sense
 
 
