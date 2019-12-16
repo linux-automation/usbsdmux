@@ -6,7 +6,11 @@ from setuptools import setup
 
 setup(
     name="usbsdmux",
-    version="0.1.5",
+    version="0.1.7",
+    author="Chris Fiege",
+    author_email="python@pengutronix.de",
+    license="LGPL-2.1-or-later",
+    url="https://github.com/pengutronix/usbsdmux",
     description="Tool to control an usb-sd-mux from the command line",
     packages=['usbsdmux'],
     entry_points={
@@ -16,4 +20,6 @@ setup(
             'usbsdmux-service = usbsdmux.service:main',
         ]
     },
+    classifiers=[
+    ]
 )
