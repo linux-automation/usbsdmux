@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="usbsdmux",
-    version="0.1.7",
+    version="0.1.8",
     author="Chris Fiege",
     author_email="python@pengutronix.de",
     license="LGPL-2.1-or-later",
