@@ -31,12 +31,6 @@ Under the hood this tool provides interfaces to access the following features of
 Quickstart
 ----------
 
-Clone the git repository:
-
-.. code-block:: bash
-
-   $ git clone https://github.com/pengutronix/usbsdmux.git
-
 Create and activate a virtualenv for usbsdmux:
 
 .. code-block:: bash
@@ -48,7 +42,7 @@ Install usbsdmux into the virtualenv:
 
 .. code-block:: bash
 
-   $ python setup.py install
+   $ pip install usbsdmux
 
 Now you can run ``usbsdmux`` command by giving the appropriate /dev/sg* device,
 e.g.:
