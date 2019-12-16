@@ -1,4 +1,3 @@
 include COPYING
-include LICENSE
 include fastentrypoints.py
 graft contrib
