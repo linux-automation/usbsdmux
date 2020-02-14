@@ -316,7 +316,7 @@ class Usb2642I2C(object):
 #    print("SGIO:")
 #    print(self.to_pretty_hex(sgio))
 
-    with open(self.sg, 'r') as fh:
+    with open(self.sg, 'w+b', buffering=0) as fh:
       rc =  fcntl.ioctl(fh, self._SG_IO, sgio)
       if rc != 0:
         raise IoctlFailed("SG_IO ioctl() failed with non-zero exit-code {}"\
