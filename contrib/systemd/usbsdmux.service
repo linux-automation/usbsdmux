@@ -6,6 +6,8 @@ Requires=usbsdmux.socket
 [Service]
 Type=simple
 ExecStart=/path/to/usb-sd-mux/.venv/bin/usbsdmux-service
+User=usbsdmux
+Group=usbsdmux
 
 [Install]
 WantedBy=multi-user.target
