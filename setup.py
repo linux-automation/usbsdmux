@@ -19,10 +19,8 @@ setup(
             'usbsdmux-configure = usbsdmux.usb2642eeprom:main',
             'usbsdmux-service = usbsdmux.service:main',
         ],
-    classifiers=[
-        "License :: OSI Approved :: GNU Lesser General Public License v2.1 or later (LGPLv2.1+)"
-    ]
     },
     classifiers=[
+        "License :: OSI Approved :: GNU Lesser General Public License v2.1 or later (LGPLv2.1+)"
     ]
 )
