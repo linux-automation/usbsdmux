@@ -52,6 +52,30 @@ e.g.:
    $ usbsdmux /dev/sg1 dut
    $ usbsdmux /dev/sg1 host
 
+If there is no ``/dev/sg*`` device while the device is plugged in, the
+generic scsi driver module may not be loaded yet. In that case load the
+driver module (as root):
+
+.. code-block:: bash
+
+   # modprobe sg
+
+In case there are multiple generic scsi devices, look up the index.
+Example (as root):
+
+.. code-block:: bash
+
+   # ls /dev/sg*
+   /dev/sg0  /dev/sg1  /dev/sg2
+   
+   # cat /proc/scsi/sg/device_strs
+   ATA             SK hynix SC311 S        0P10
+   WD              Elements 25A1           1013
+   LinuxAut        sdmux HS-SD/MMC         2.09
+
+In this case it would be 3rd entry referring to ``/dev/sg2``.
+
+
 Using as root
 -------------
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
