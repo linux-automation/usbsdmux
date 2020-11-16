@@ -49,6 +49,8 @@ The service always answers with a payload like the following:
 
 For example:
 {"error": False, "text": "Success"}
+or as a result of mode=get:
+{"error": False, "text": "dut"}
 """
 # Default filedescriptor used by systemd to pass us a socket
 systemd_socket_fd = 3
@@ -96,6 +98,9 @@ def process_request(raw_string):
 
         elif payload["mode"].lower() == "host":
             ctl.mode_host()
+
+        elif payload["mode"].lower() == "get":
+            return create_answer(err_text=ctl.get_mode())
 
         else:
             return create_answer(had_error=True, err_text="Unknown mode")
