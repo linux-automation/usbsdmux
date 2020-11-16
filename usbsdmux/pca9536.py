@@ -66,6 +66,12 @@ class Pca9536(object):
 
     self._usb.write_to(self._I2cAddr, [register, value])
 
+  def read_register(self, addr, len=1):
+    """
+    Returns a register of the Pca9536.
+    """
+    return self._usb.write_read_to(self._I2cAddr, [addr], len)
+
   def set_pin_to_output(self, pins):
     """
     Sets the corresponding pins as outputs.
