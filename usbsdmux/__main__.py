@@ -57,13 +57,19 @@ def client_mode(sg, mode, socket_path):
         exit(1)
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter
+    )
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
     parser.add_argument(
         "mode",
-        help="mode to switch to",
-        choices=["dut", "host", "off", "client"],
+        help="Action:\n"
+             "dut - set to dut mode\n"
+             "client - set to dut mode (alias for dut)\n"
+             "host - set to host mode\n"
+             "off - set to off mode",
+        choices=["dut", "client", "host", "off"],
         type=str.lower)
     parser.add_argument(
         "-d",
