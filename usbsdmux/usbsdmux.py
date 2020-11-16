@@ -69,7 +69,8 @@ class UsbSdMux(object):
     self._pca.output_values(self._DAT_disable | self._PWR_disable |
                             self._select_HOST | self._card_removed)
 
-    time.sleep(1)
+    if wait:
+        time.sleep(1)
 
   def mode_DUT(self, wait=True):
     """
