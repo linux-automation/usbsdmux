@@ -57,6 +57,18 @@ class UsbSdMux(object):
         Pca9536.gpio_0 | Pca9536.gpio_1 |
         Pca9536.gpio_2 | Pca9536.gpio_3)
 
+  def get_mode(self):
+    """
+    Returns currently selected mode as string
+    """
+    val = self._pca.read_register(1)[0]
+    if val & self._select_DUT:
+       return "dut"
+    if val & self._PWR_disable:
+       return "off"
+
+    return "host"
+
   def mode_disconnect(self, wait=True):
     """
     Will disconnect the Micro-SD Card from both host and DUT.
