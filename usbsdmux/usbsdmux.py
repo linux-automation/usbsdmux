@@ -20,7 +20,7 @@
 
 from .pca9536 import Pca9536
 import time
-
+import glob
 
 class UsbSdMux(object):
   """
@@ -58,6 +58,23 @@ class UsbSdMux(object):
     self._pca.set_pin_to_output(
         Pca9536.gpio_0 | Pca9536.gpio_1 |
         Pca9536.gpio_2 | Pca9536.gpio_3)
+
+  @classmethod
+  def enumerate(cls):
+    usb_sd_muxes = list()
+
+    for sg in glob.glob('/dev/sg*'):
+      try:
+        usb_sd_muxes.append(Pca9536(sg, True)._usb.read_usb_fields(
+            ('idVendor', 'idProduct', 'manufacturer', 'product', 'version', 'serial')
+        ))
+
+        usb_sd_muxes[-1]['path'] = sg
+
+      except:
+        pass
+
+    return usb_sd_muxes
 
   def mode_disconnect(self, wait=True):
     """

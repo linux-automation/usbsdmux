@@ -25,6 +25,23 @@ import json
 import socket
 import os
 
+def list_mode():
+    muxes = UsbSdMux.enumerate()
+
+    header = {
+        'path': 'Path',
+        'manufacturer' : 'Manufacturer',
+        'product' : 'Product',
+        'version' : 'Version',
+        'serial' : 'Serial'
+    }
+
+    for mux in [header] + muxes:
+        print('{:10} | {:21} | {:17} | {:7} | {:12}'.format(
+            mux['path'], mux['manufacturer'], mux['product'],
+            mux['version'], mux['serial']
+        ))
+
 def direct_mode(sg, mode, validate_usb=True):
     ctl = UsbSdMux(sg, validate_usb)
 
@@ -59,12 +76,13 @@ def client_mode(sg, mode, socket_path):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
+    parser.add_argument("sg", metavar="<SG>/list", help="/dev/sg* device to use. Or \"list\" to show available devices")
     parser.add_argument(
         "mode",
         help="mode to switch to",
         choices=["dut", "host", "off", "client"],
-        type=str.lower)
+        type=str.lower,
+        nargs='?')
     parser.add_argument(
         "-d",
         "--direct",
@@ -90,6 +108,14 @@ def main():
         default="/tmp/sdmux.sock")
 
     args = parser.parse_args()
+
+    if args.sg == 'list':
+        list_mode()
+        exit(0)
+
+    if args.mode not in ("dut", "host", "off", "client"):
+        print("Mode must be either dut, host, off or client. Exiting", file=sys.stderr)
+        exit(1)
 
     if args.client is True and args.direct is True:
         print("Can not run in direct and client mode at the same time. Exiting.", file=sys.stderr)
