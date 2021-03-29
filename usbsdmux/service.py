@@ -68,7 +68,7 @@ def create_answer(had_error=False, err_text=""):
     answer["text"] =  err_text
     return json.dumps(answer)
 
-def process_request(raw_string):
+def process_request(raw_string, validate_usb=True):
     """
     Parses a message received from the communication-socket and tries to execute
     the request.
@@ -78,14 +78,15 @@ def process_request(raw_string):
 
     * 'sg'   -- /dev/sg* - device to use to control the USB-SD-Mux
     * 'mode' -- Mode to set the USB-SD-Mux to
-
+    * 'validate_usb' -- Check if the USB descriptor fields of the sg device match known
+                        USB-SD-Muxes values.
 
     Arguments:
     raw_string -- Message recieved as string."""
 
     try:
         payload = json.loads(raw_string)
-        ctl = UsbSdMux(payload["sg"])
+        ctl = UsbSdMux(payload["sg"], validate_usb)
 
         if payload["mode"].lower() == "off":
             ctl.mode_disconnect()
@@ -114,6 +115,12 @@ def main():
         help="Time without connection before the service terminates in seconds.",
         default=120,
         type=int)
+    parser.add_argument(
+        "-f",
+        "--force",
+        help=argparse.SUPPRESS,
+        action="store_true",
+        default=False)
     parser.add_argument(
         "--socket",
         help="Will use given socket for standalone-mode instead of socket-activation with systemd.")
@@ -149,7 +156,10 @@ def main():
     while True:
         try:
             conn, addr = sock.accept()
-            answer = process_request(conn.recv(4096).decode())
+            answer = process_request(
+                conn.recv(4096).decode(),
+                not self.force
+            )
             conn.send(answer.encode())
             conn.close()
             timeout = time.time() + args.timeout

@@ -25,8 +25,8 @@ import json
 import socket
 import os
 
-def direct_mode(sg, mode):
-    ctl = UsbSdMux(sg)
+def direct_mode(sg, mode, validate_usb=True):
+    ctl = UsbSdMux(sg, validate_usb)
 
     if mode.lower() == "off":
         ctl.mode_disconnect()
@@ -78,6 +78,12 @@ def main():
         action="store_true",
         default=False)
     parser.add_argument(
+        "-f",
+        "--force",
+        help=argparse.SUPPRESS,
+        action="store_true",
+        default=False)
+    parser.add_argument(
         "-s",
         "--socket",
         help="Overrides the default socket for client mode.",
@@ -92,10 +98,10 @@ def main():
     if args.client is True:
         client_mode(args.sg, args.mode, args.socket)
     elif args.direct is True:
-        direct_mode(args.sg, args.mode)
+        direct_mode(args.sg, args.mode, not args.force)
     else:
         if os.getresuid()[0] == 0:
-            direct_mode(args.sg, args.mode)
+            direct_mode(args.sg, args.mode, not args.force)
         else:
             client_mode(args.sg, args.mode, args.socket)
 

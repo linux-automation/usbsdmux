@@ -39,14 +39,16 @@ class UsbSdMux(object):
   _card_inserted = 0x00
   _card_removed = Pca9536.gpio_3
 
-  def __init__(self, sg):
+  def __init__(self, sg, validate_usb=True):
     """
     Create a new UsbSdMux.
 
     Arguments:
     sg -- /dev/sg* to use
+    validate_usb -- Check if the USB descriptor fields of the sg device match known
+                    USB-SD-Muxes values.
     """
-    self._pca = Pca9536(sg)
+    self._pca = Pca9536(sg, validate_usb)
 
     # setting the output-values to defaults before enabling outputs on the
     # GPIO-expander
@@ -106,4 +108,3 @@ class UsbSdMux(object):
     # now connect data and power
     self._pca.output_values(self._DAT_enable | self._PWR_enable |
                             self._select_HOST | self._card_inserted)
-

@@ -43,7 +43,7 @@ class USB2642Eeprom(object):
   Provides an interface to write the configuration EEPROM of a USB2642.
   """
 
-  def __init__(self, sg, i2c_addr=0x50):
+  def __init__(self, sg, i2c_addr=0x50, validate_usb=False):
     """"
     Create a new USB2642Eeprom Instance.
 
@@ -51,9 +51,12 @@ class USB2642Eeprom(object):
     sg -- /dev/sg* to use
     i2c_addr -- 7-Bit Address of the EEPROM to use. Defaults to 0x50 for the
                 configuration-EEPROM. You probably do NOT want to override this.
+    validate_usb -- Check if the USB descriptor fields of the sg device match known
+                    USB-SD-Muxes values. By default do'nt, as this tool is used
+                    to initially write these values.
     """
 
-    self.i2c = Usb2642I2C(sg)
+    self.i2c = Usb2642I2C(sg, validate_usb)
     self.addr = i2c_addr
 
   class _EepromStruct(ctypes.Structure):

@@ -20,6 +20,8 @@
 
 import ctypes
 import fcntl
+import os
+import re
 from .ctypehelper import string_to_microchip_unicode_uint8_array,\
   string_to_uint8_array, list_to_uint8_array, to_pretty_hex
 
@@ -72,15 +74,33 @@ class Usb2642I2C(object):
   Make sure you have rw-rights :)
   """
 
-  def __init__(self, sg):
+  _USB_VALIDATION_FIELDS = (
+    'idVendor', 'idProduct', 'manufacturer', 'product'
+  )
+  """
+  Fields in the USB device descriptor that are checked
+  to identify valid USB-SD-Muxes
+  """
+
+  _USB_VALIDATION_VALUES = (
+    ('0424', '4041', 'Pengutronix', 'usb-sd-mux_rev2.0'),
+    ('0424', '4041', 'Linux Automation GmbH', 'usb-sd-mux_rev4.0')
+  )
+  """Valid USB descriptor values used in USB-SD-Muxes"""
+
+  def __init__(self, sg, validate_usb=True):
     """
     Create a new USB2642I2C-Interface wrapper.
 
     Arguments:
     sg -- The sg-device to use. E.g. "/dev/sg1"
+    validate_usb -- Check if the USB descriptor fields of the sg device match known
+                    USB-SD-Muxes values.
     """
     self.sg = sg
 
+    if validate_usb:
+      self._validate_sg_dev()
 
   class _SgioHdrStruct(ctypes.Structure):
     """
@@ -195,6 +215,65 @@ class Usb2642I2C(object):
 
   assert ctypes.sizeof(_USB2642I2cReadStruct) == 16
 
+  def read_usb_fields(self, fields):
+    """
+    Look up the sg device in /sys/class, find the corresponding
+    USB device in /sys/devices and fetch information that can
+    be used to identify the device as USB-SD-Mux.
+    """
+
+    _, sg_name = os.path.split(self.sg)
+
+    sys_sg = os.path.join('/sys/class/scsi_generic', sg_name)
+    sys_sg_real = os.path.realpath(sys_sg)
+
+    sys_usb = os.path.join(sys_sg, '../../../../../../')
+    sys_usb_real = os.path.realpath(sys_usb)
+
+    def read_info(field):
+      field_path = os.path.join(sys_usb_real, field)
+
+      try:
+        with open(field_path) as fd:
+          return fd.read().strip()
+
+      except FileNotFoundError:
+        return None
+
+    info = dict(
+      (field, read_info(field))
+      for field in fields
+    )
+
+    return info
+
+  def _validate_sg_dev(self):
+    """
+    Make sure the supplied device is a /dev/sgX device, or symlinks
+    to one. Look up the corresponding USB-Device (if any) and check
+    if it looks like an actual USB-SD-Mux.
+    """
+
+    HINT = 'Use the argument -f to skip this device-validity check.'
+
+    # Follow symlinks
+    self.sg = os.path.realpath(self.sg)
+
+    # Pattern-match the resulting device path
+    if not re.fullmatch(r'/dev/sg[0-9]+', self.sg):
+      error = 'Device {} is not a /dev/sgX device. '.format(self.sg)
+      raise ValueError(error + HINT)
+
+    # Read and check USB device descriptor fields
+    info = self.read_usb_fields(self._USB_VALIDATION_FIELDS)
+
+    info_tuple = tuple(
+      info[field] for field in self._USB_VALIDATION_FIELDS
+    )
+
+    if info_tuple not in self._USB_VALIDATION_VALUES:
+      error = 'Device {} has unknown USB information ({}). '.format(self.sg, info)
+      raise ValueError(error + HINT)
 
   def _get_SCSI_cmd_I2C_write(self, slaveAddr, data):
     """

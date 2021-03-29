@@ -44,16 +44,18 @@ class Pca9536(object):
   _direction_output = 0
   _direction_input = 1
 
-  def __init__(self, sg):
+  def __init__(self, sg, validate_usb=True):
     """
     Create a new Pca9536-controller.
 
     Arguments:
     sg -- /dev/sg* to use.
+    validate_usb -- Check if the USB descriptor fields of the sg device match known
+                    USB-SD-Muxes values.
     """
-    self.sg = sg
 
-    self._usb = Usb2642I2C(sg)
+    self._usb = Usb2642I2C(sg, validate_usb)
+    self.sg = sg
 
     # After POR all Pins are Inputs. This value will from now on mirror the
     # value of die _register_configuration
