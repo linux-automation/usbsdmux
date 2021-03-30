@@ -158,7 +158,7 @@ def main():
             conn, addr = sock.accept()
             answer = process_request(
                 conn.recv(4096).decode(),
-                not self.force
+                not args.force
             )
             conn.send(answer.encode())
             conn.close()

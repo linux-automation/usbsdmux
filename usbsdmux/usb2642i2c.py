@@ -222,15 +222,48 @@ class Usb2642I2C(object):
     be used to identify the device as USB-SD-Mux.
     """
 
-    _, sg_name = os.path.split(self.sg)
+    sg_name = os.path.basename(self.sg)
 
+    # /sys/class/scsi_generic/sg* are symlinks to a a directory
+    # somewhere below /sys/devices/.
     sys_sg = os.path.join('/sys/class/scsi_generic', sg_name)
     sys_sg_real = os.path.realpath(sys_sg)
 
-    sys_usb = os.path.join(sys_sg, '../../../../../../')
+    # For an actual USB-SD-Mux the path stored in sys_sg_real
+    # looks something like this:
+    #
+    #  /sys/devices/pci0000:00/0000:00:14.0/usb1/1-9/1-9.1/1-9.1:1.0/
+    #  host6/target6:0:0/6:0:0:0/scsi_generic/sg0
+    #
+    # The path can be divided into a part dependant on the port the
+    # USB-SD-Mux is connected to:
+    #
+    #  /sys/devices/pci0000:00/0000:00:14.0/usb1/
+    #
+    # And a part with a fixed structure common to all USB-SD-Muxes:
+    #
+    #  1-9/1-9.1/1-9.1:1.0/host6/target6:0:0/6:0:0:0/scsi_generic/sg0
+    #                      ^^^^^^^^^^^^^^^^^^^^^^^^^-- SCSI
+    #            ^^^^^^^^^-- USB Storage interface
+    #     ^^^^^^-- USB connected SD Card reader on the first Hub Port
+    #  ^^^-- USB Hub integrated into the USB2642 USB Hub/SD Card reader
+    #
+    # Move up the directory structure to the SD Card reader so we can
+    # read its idVendor/idProduct etc.
+    # This will result in a bogus path for devices that are not USB-SD-Muxes,
+    # which is okay as long as it makes _validate_sg_dev fail.
+    sys_usb = os.path.join(sys_sg_real, '../../../../../../')
     sys_usb_real = os.path.realpath(sys_usb)
 
     def read_info(field):
+      # Make sure we did not move up the directory structure too far
+      # (Might be the case when not scanning an USB-SD-Mux).
+      if not sys_usb_real.startswith('/sys/devices'):
+        return None
+
+      # The SD Card reader directory contains files like idVendor and
+      # idProduct. Return their content or, should they not exist, None
+      # (resulting in _validate_sg_dev failing).
       field_path = os.path.join(sys_usb_real, field)
 
       try:
@@ -272,7 +305,7 @@ class Usb2642I2C(object):
     )
 
     if info_tuple not in self._USB_VALIDATION_VALUES:
-      error = 'Device {} has unknown USB information ({}). '.format(self.sg, info)
+      error = 'Device {} does not look like an USB-SD-Mux ({}). '.format(self.sg, info)
       raise ValueError(error + HINT)
 
   def _get_SCSI_cmd_I2C_write(self, slaveAddr, data):
