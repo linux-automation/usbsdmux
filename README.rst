@@ -44,13 +44,16 @@ Install usbsdmux into the virtualenv:
 
    $ pip install usbsdmux
 
-Now you can run ``usbsdmux`` command by giving the appropriate /dev/sg* device,
-e.g.:
+Now you can run ``usbsdmux list`` to get a list of connected usb-sd-muxes:
 
 .. code-block:: bash
 
-   $ usbsdmux /dev/sg1 dut
-   $ usbsdmux /dev/sg1 host
+   $ usbsdmux list
+   Path       | Manufacturer          | Product           | Version | Serial
+   /dev/sg1   | Pengutronix           | usb-sd-mux_rev2.0 | 2.00    | 000000000064
+   /dev/sg2   | Pengutronix           | usb-sd-mux_rev2.0 | 2.00    | 000000000043
+   /dev/sg3   | Pengutronix           | usb-sd-mux_rev2.0 | 2.00    | 000000000107
+   /dev/sg4   | Linux Automation GmbH | usb-sd-mux_rev4.0 | 2.00    | 000000000757
 
 Using as root
 -------------
@@ -58,9 +61,12 @@ If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
 can just use ``usbsdmux`` as root.
 
 If you have installed this tool inside a virtualenv you can just call the
-shell-wrapper with something like
-``sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT``.
+shell-wrapper along with the appropriate `/dev/sg*` device path:
 
+.. code-block:: bash
+
+   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 dut
+   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 host
 
 Using as non-root user
 ----------------------
