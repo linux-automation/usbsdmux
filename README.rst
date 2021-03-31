@@ -124,7 +124,7 @@ Known issues
 
 .. |license| image:: https://img.shields.io/badge/license-LGPLv2.1-blue.svg
     :alt: LGPLv2.1
-    :target: https://raw.githubusercontent.com/pengutronix/usb-sd-mux-ctl/master/LICENSE
+    :target: https://raw.githubusercontent.com/linux-automation/usbsdmux/master/COPYING
 
 .. |pypi| image:: https://img.shields.io/pypi/v/usbsdmux.svg
     :alt: pypi.org
