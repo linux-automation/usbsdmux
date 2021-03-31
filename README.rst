@@ -105,17 +105,26 @@ the sg-device for every USB-SD-Mux is linked to a device in
 This makes sure you can access a USB-SD-Mux with the same name - independent
 of the order they are connected or the USB or the USB-topology.
 
-ToDo
-----
+Known issues
+------------
 
-* Access to /dev/sg* needs the
+* Some single board computers, especially Raspberry Pi model 4s, do not work with
+  new/fast micro SD cards, due to drive strength issues at high frequencies.
+  Use old and slow micro SD cards with these devices.
+  Another workaround is the replacement of resistors `R101` and `R102` with 0Ω
+  parts. This modifications does however void the EMC compliance statement provided
+  by the Linux Automation GmbH.
+* Some usecases, like hard to reach connectors or full-size SD cards, necessitate the
+  use of adapters or extension cables, leading to the same drive strength issues
+  and workarounds as documented above.
+* The `usbsdmux-service` runs as `root`, as accessing `/dev/sg*` devices requires
   `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_.
-  The service should drop all not needed capabilities after it is started.
+  The service should, to improve security, drop all not needed capabilities after it is started.
 
 
 .. |license| image:: https://img.shields.io/badge/license-LGPLv2.1-blue.svg
     :alt: LGPLv2.1
-    :target: https://raw.githubusercontent.com/pengutronix/usb-sd-mux-ctl/master/LICENSE
+    :target: https://raw.githubusercontent.com/linux-automation/usbsdmux/master/COPYING
 
 .. |pypi| image:: https://img.shields.io/pypi/v/usbsdmux.svg
     :alt: pypi.org
