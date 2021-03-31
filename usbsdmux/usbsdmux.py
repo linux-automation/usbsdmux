@@ -47,22 +47,6 @@ class UsbSdMux(object):
     sg -- /dev/sg* to use
     """
     self._pca = Pca9536(sg)
-    self.write_mode = False
-
-  def _init_write(self):
-    if self.write_mode:
-        return
-
-    # setting the output-values to defaults before enabling outputs on the
-    # GPIO-expander
-    self.mode_disconnect(wait=False, init_write=False)
-
-    # now enabling outputs
-    self._pca.set_pin_to_output(
-        Pca9536.gpio_0 | Pca9536.gpio_1 |
-        Pca9536.gpio_2 | Pca9536.gpio_3)
-
-    self.write_mode = True
 
   def get_mode(self):
     """
@@ -76,7 +60,7 @@ class UsbSdMux(object):
 
     return "host"
 
-  def mode_disconnect(self, wait=True, init_write=True):
+  def mode_disconnect(self, wait=True):
     """
     Will disconnect the Micro-SD Card from both host and DUT.
 
@@ -84,11 +68,12 @@ class UsbSdMux(object):
     wait -- Command will block for some time until the voltage-supply of
     the sd-card is known to be close to zero
     """
-    if init_write:
-        self._init_write()
 
+    # Set the output registers to known values and activate them afterwards
     self._pca.output_values(self._DAT_disable | self._PWR_disable |
                             self._select_HOST | self._card_removed)
+    self._pca.set_pin_to_output(Pca9536.gpio_0 | Pca9536.gpio_1 |
+                                Pca9536.gpio_2 | Pca9536.gpio_3)
 
     time.sleep(1)
 
@@ -99,7 +84,6 @@ class UsbSdMux(object):
     This Command will issue a disconnect first to make sure the the SD-card
     has been properly disconnected from both sides and it's supply was off.
     """
-    self._init_write()
 
     self.mode_disconnect(wait)
 
@@ -119,7 +103,6 @@ class UsbSdMux(object):
     This Command will issue a disconnect first to make sure the the SD-card
     has been properly disconnected from both sides and it's supply was off.
     """
-    self._init_write()
 
     self.mode_disconnect(wait)
 
