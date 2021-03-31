@@ -48,14 +48,17 @@ class UsbSdMux(object):
     """
     self._pca = Pca9536(sg)
 
-    # setting the output-values to defaults before enabling outputs on the
-    # GPIO-expander
-    self.mode_disconnect(wait=False)
+  def get_mode(self):
+    """
+    Returns currently selected mode as string
+    """
+    val = self._pca.read_register(1)[0]
+    if val & self._select_DUT:
+       return "dut"
+    if val & self._PWR_disable:
+       return "off"
 
-    # now enabling outputs
-    self._pca.set_pin_to_output(
-        Pca9536.gpio_0 | Pca9536.gpio_1 |
-        Pca9536.gpio_2 | Pca9536.gpio_3)
+    return "host"
 
   def mode_disconnect(self, wait=True):
     """
@@ -66,8 +69,11 @@ class UsbSdMux(object):
     the sd-card is known to be close to zero
     """
 
+    # Set the output registers to known values and activate them afterwards
     self._pca.output_values(self._DAT_disable | self._PWR_disable |
                             self._select_HOST | self._card_removed)
+    self._pca.set_pin_to_output(Pca9536.gpio_0 | Pca9536.gpio_1 |
+                                Pca9536.gpio_2 | Pca9536.gpio_3)
 
     if wait:
         time.sleep(1)

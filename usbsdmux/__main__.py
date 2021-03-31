@@ -34,6 +34,8 @@ def direct_mode(sg, mode):
         ctl.mode_DUT()
     elif mode.lower() == "host":
         ctl.mode_host()
+    elif mode.lower() == "get":
+        print(ctl.get_mode())
 
 def client_mode(sg, mode, socket_path):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
@@ -57,13 +59,20 @@ def client_mode(sg, mode, socket_path):
         exit(1)
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter
+    )
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
     parser.add_argument(
         "mode",
-        help="mode to switch to",
-        choices=["dut", "host", "off", "client"],
+        help="Action:\n"
+             "get - return selected mode\n"
+             "dut - set to dut mode\n"
+             "client - set to dut mode (alias for dut)\n"
+             "host - set to host mode\n"
+             "off - set to off mode",
+        choices=["get", "dut", "client", "host", "off"],
         type=str.lower)
     parser.add_argument(
         "-d",
