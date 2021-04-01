@@ -44,13 +44,26 @@ Install usbsdmux into the virtualenv:
 
    $ pip install usbsdmux
 
-Now you can run ``usbsdmux`` command by giving the appropriate /dev/sg* device,
-e.g.:
+Now you can run ``usbsdmux -h`` to get a list of possible
+command invocations:
 
-.. code-block:: bash
+.. code-block:: text
 
-   $ usbsdmux /dev/sg1 dut
-   $ usbsdmux /dev/sg1 host
+   $ usbsdmux -h
+   usage: usbsdmux [-h] SG {get,dut,client,host,off}
+
+   positional arguments:
+     SG                    /dev/sg* to use
+     {get,dut,client,host,off}
+			   Action:
+			   get - return selected mode
+			   dut - set to dut mode
+			   client - set to dut mode (alias for dut)
+			   host - set to host mode
+			   off - set to off mode
+
+   optional arguments:
+     -h, --help            show this help message and exit
 
 Using as root
 -------------
@@ -58,63 +71,53 @@ If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
 can just use ``usbsdmux`` as root.
 
 If you have installed this tool inside a virtualenv you can just call the
-shell-wrapper with something like
-``sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT``.
+shell-wrapper along with the appropriate `/dev/sg*` device path:
 
+.. code-block:: bash
 
-Using as non-root user
-----------------------
-Access to /dev/sg* needs the `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_. By default all processes created by root gain this capability.
+   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 dut
+   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 host
 
-Since you do not want to give this capability to the Python interpreter you
+Using as normal user / Reliable names
+-------------------------------------
 
-* either need to call the scripts as root
-* or use the systemd-service.
+The example udev-rule in ``contib/udev/99-usbsdmux.rules`` serves two purposes:
 
-The systemd-service is intended to be used with socket-activation.
-The service is present inside ``usbsdmux-service``.
+* Allow users currently logged into the system and users in the
+  ``plugdev`` group [1]_ to access connected USB-SD-Muxes.
+* Create a reliable path in the filesystem to access specific
+  USB-SD-Muxes based on their pre-programmed unique serial number.
+  This is useful when multiple USB-SD-Muxes are connect to a system,
+  as the enumeration-order, and thus the ``/dev/sg*`` numbering,
+  may differ between reboots.
+  The serial number is printed on a label attached to the device.
 
-The systemd-units provided in ``contrib/systemd/`` show an example of how to
-set up the service with systemd and socket-activation.
-You may adapt and copy them into your machine's local systemd service folder
-``/etc/systemd/system/``
+Users of a Debian based distribution [1]_ can install the udev rule
+by cloning this repository and copying it to the appropriate location
+and reloading the active udev rules:
 
-To start the socket unit and let it create the required socket path
-(requires permissions), run::
+.. code-block:: bash
 
-  systemctl start usbsdmux.socket
+   $ git clone "https://github.com/linux-automation/usbsdmux.git"
+   $ sudo cp usbsdmux/contrib/udev/99-usbsdmux.rules /etc/udev/rules.d/
+   $ sudo udevadm control --reload-rules
 
-Now you can use the ``usbsdmux`` tool from a non-root user by calling it with
-the client ``-c`` argument, e.g.::
-
-  usbsdmux -c /dev/sg1 DUT
-
-If you use a non-standard socket path (i.e. not ``/tmp/sdmux.sock``) you also
-need to explicitly set the socket path::
-
-  usbsdmux -c -s /path/to/sock.file /dev/sg1 DUT
-
-Reliable names for the USB-SD-Mux
----------------------------------
-
-A USB-SD-Mux comes with a pre-programmed serial that is also printed on the
-device itself. With the udev-rule in ``contib/udev/99-usbsdmux.rules``
-the sg-device for every USB-SD-Mux is linked to a device in
-``/dev/usb-sd-mux/id-*``.
-
-This makes sure you can access a USB-SD-Mux with the same name - independent
-of the order they are connected or the USB or the USB-topology.
-
-You can get a list of connected USB-SD-Muxes, based on their unique serial numbers,
-by listing the contents of the ``/dev/usb-sd-mux/`` directory:
+After reattaching the USB-SD-Mux you should get a list of connected USB-SD-Muxes,
+based on their unique serial numbers, by listing the contents of
+the ``/dev/usb-sd-mux/`` directory:
 
 .. code-block:: bash
 
     $ ls -l /dev/usb-sd-mux/
     total 0
-    lrwxrwxrwx 1 root root 6 Mar 31 11:21 id-000000000042 -> ../sg3
-    lrwxrwxrwx 1 root root 6 Mar 27 00:33 id-000000000078 -> ../sg2
-    lrwxrwxrwx 1 root root 6 Mar 24 09:51 id-000000000378 -> ../sg1
+    lrwxrwxrwx 1 root plugdev 6 Mar 31 11:21 id-000000000042 -> ../sg3
+    lrwxrwxrwx 1 root plugdev 6 Mar 27 00:33 id-000000000078 -> ../sg2
+    lrwxrwxrwx 1 root plugdev 6 Mar 24 09:51 id-000000000378 -> ../sg1
+
+.. [1] The ``plugdev`` group is used in Debian and Debian based distributions
+       (like Ubuntu and Linux Mint) to grant access to pluggable gadgets.
+       Depending on your Linux distribution you may want to create/use another
+       group for this purpose and adapt the ``udev`` rule accordingly.
 
 Troubleshooting
 ---------------
@@ -128,9 +131,6 @@ Troubleshooting
 * Some usecases, like hard to reach connectors or full-size SD cards, necessitate the
   use of adapters or extension cables, leading to the same drive strength issues
   and require the same workarounds as documented above.
-* The ``usbsdmux-service`` runs as ``root``, as accessing ``/dev/sg*`` devices requires
-  `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_.
-  The service should, to improve security, drop all not needed capabilities after it is started.
 * In order for the ``/dev/sg*`` device to appear the ``sg`` kernel module needs to be loaded
   into the kernel. This is usually done automatically by ``udev`` once the USB-SD-Mux is connected.
   To manually load the kernel module run ``sudo modprobe sg``.
