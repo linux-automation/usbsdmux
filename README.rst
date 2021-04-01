@@ -44,13 +44,27 @@ Install usbsdmux into the virtualenv:
 
    $ pip install usbsdmux
 
-Now you can run ``usbsdmux`` command by giving the appropriate /dev/sg* device,
-e.g.:
+Now you can run ``usbsdmux -h`` to get a list of possible
+command invocations:
 
-.. code-block:: bash
+.. code-block:: text
 
-   $ usbsdmux /dev/sg1 dut
-   $ usbsdmux /dev/sg1 host
+   $ usbsdmux -h
+   usage: usbsdmux [-h] SG {get,dut,client,host,off}
+
+   positional arguments:
+     SG                    /dev/sg* to use
+     {get,dut,client,host,off}
+			   Action:
+			   get - return selected mode
+			   dut - set to dut mode
+			   client - set to dut mode (alias for dut)
+			   host - set to host mode
+			   off - set to off mode
+
+   optional arguments:
+     -h, --help            show this help message and exit
+
 
 Using as root
 -------------
@@ -58,41 +72,12 @@ If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
 can just use ``usbsdmux`` as root.
 
 If you have installed this tool inside a virtualenv you can just call the
-shell-wrapper with something like
-``sudo /path/to/virtualenv/bin/usbsdmux /dev/sg1 DUT``.
+shell-wrapper along with the appropriate `/dev/sg*` device path:
 
+.. code-block:: bash
 
-Using as non-root user
-----------------------
-Access to /dev/sg* needs the `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_. By default all processes created by root gain this capability.
-
-Since you do not want to give this capability to the Python interpreter you
-
-* either need to call the scripts as root
-* or use the systemd-service.
-
-The systemd-service is intended to be used with socket-activation.
-The service is present inside ``usbsdmux-service``.
-
-The systemd-units provided in ``contrib/systemd/`` show an example of how to
-set up the service with systemd and socket-activation.
-You may adapt and copy them into your machine's local systemd service folder
-``/etc/systemd/system/``
-
-To start the socket unit and let it create the required socket path
-(requires permissions), run::
-
-  systemctl start usbsdmux.socket
-
-Now you can use the ``usbsdmux`` tool from a non-root user by calling it with
-the client ``-c`` argument, e.g.::
-
-  usbsdmux -c /dev/sg1 DUT
-
-If you use a non-standard socket path (i.e. not ``/tmp/sdmux.sock``) you also
-need to explicitly set the socket path::
-
-  usbsdmux -c -s /path/to/sock.file /dev/sg1 DUT
+   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 dut
+   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 host
 
 Reliable names for the USB-SD-Mux
 ---------------------------------
@@ -128,9 +113,6 @@ Troubleshooting
 * Some usecases, like hard to reach connectors or full-size SD cards, necessitate the
   use of adapters or extension cables, leading to the same drive strength issues
   and require the same workarounds as documented above.
-* The ``usbsdmux-service`` runs as ``root``, as accessing ``/dev/sg*`` devices requires
-  `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_.
-  The service should, to improve security, drop all not needed capabilities after it is started.
 * In order for the ``/dev/sg*`` device to appear the ``sg`` kernel module needs to be loaded
   into the kernel. This is usually done automatically by ``udev`` once the USB-SD-Mux is connected.
   To manually load the kernel module run ``sudo modprobe sg``.

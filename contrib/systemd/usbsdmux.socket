@@ -1,9 +1,0 @@
-[Unit]
-Description=USB-SD-Mux Proxy-Service socket
-PartOf=usbsdmux.service
-
-[Socket]
-ListenSequentialPacket=/tmp/sdmux.sock
-
-[Install]
-WantedBy=sockets.target

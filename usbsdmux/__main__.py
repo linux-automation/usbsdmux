@@ -20,43 +20,7 @@
 
 from .usbsdmux import UsbSdMux
 import argparse
-import sys, errno
-import json
-import socket
-import os
-
-def direct_mode(sg, mode):
-    ctl = UsbSdMux(sg)
-
-    if mode.lower() == "off":
-        ctl.mode_disconnect()
-    elif mode.lower() == "dut" or mode.lower() == "client":
-        ctl.mode_DUT()
-    elif mode.lower() == "host":
-        ctl.mode_host()
-    elif mode.lower() == "get":
-        print(ctl.get_mode())
-
-def client_mode(sg, mode, socket_path):
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
-    try:
-        sock.connect(socket_path)
-    except FileNotFoundError:
-        print("Socket path %s does not exist. Exiting." % socket_path, file=sys.stderr)
-        exit(1)
-    except socket.error as ex:
-        print("Failed opening socket %s : %s. Exiting." % (socket_path, ex), file=sys.stderr)
-        exit(1)
-    payload = dict()
-    payload["mode"] = mode
-    payload["sg"] = sg
-    sock.send(json.dumps(payload).encode())
-    answer = json.loads(sock.recv(4096).decode())
-    sock.close()
-    if 'text' in answer:
-        print(answer['text'])
-    if not 'error' in answer or answer['error']:
-        exit(1)
+import sys
 
 def main():
     parser = argparse.ArgumentParser(
@@ -74,39 +38,43 @@ def main():
              "off - set to off mode",
         choices=["get", "dut", "client", "host", "off"],
         type=str.lower)
-    parser.add_argument(
-        "-d",
-        "--direct",
-        help="Forces to run in direct mode.",
-        action="store_true",
-        default=False)
-    parser.add_argument(
-        "-c",
-        "--client",
-        help="Force to run in client mode with socket /tmp/sdmux.sock",
-        action="store_true",
-        default=False)
-    parser.add_argument(
-        "-s",
-        "--socket",
-        help="Overrides the default socket for client mode.",
-        default="/tmp/sdmux.sock")
+
+    # These arguments were previously used for the client/service
+    # based method to grant USB-SD-Mux access to non-root users.
+    # The client/service model is no longer needed due to new udev
+    # rules and a change to how the /dev/sg* devices are accessed.
+    # Display a warning but do not fail when these are used so
+    # existing scripts do not break and can be upgraded gracefully.
+    parser.add_argument("-d", "--direct", help=argparse.SUPPRESS,
+                        action="store_true", default=None)
+    parser.add_argument("-c", "--client", help=argparse.SUPPRESS,
+                        action="store_true", default=None)
+    parser.add_argument("-s", "--socket", help=argparse.SUPPRESS,
+                        default=None)
 
     args = parser.parse_args()
 
-    if args.client is True and args.direct is True:
-        print("Can not run in direct and client mode at the same time. Exiting.", file=sys.stderr)
-        exit(1)
+    if any(arg is not None for arg in (args.direct, args.client, args.socket)):
+        print("usbsdmux: usage of -s/-c/-d arguments is deprecated "
+              "as the service/client split is no longer required. "
+              "Please upgrade your scripts to not supply either of these arguments",
+              file=sys.stderr)
 
-    if args.client is True:
-        client_mode(args.sg, args.mode, args.socket)
-    elif args.direct is True:
-        direct_mode(args.sg, args.mode)
-    else:
-        if os.getresuid()[0] == 0:
-            direct_mode(args.sg, args.mode)
-        else:
-            client_mode(args.sg, args.mode, args.socket)
+    ctl = UsbSdMux(args.sg)
+    mode = args.mode.lower()
+
+    if mode == "off":
+        ctl.mode_disconnect()
+
+    elif mode == "dut" or mode == "client":
+        ctl.mode_DUT()
+
+    elif mode == "host":
+        ctl.mode_host()
+
+    elif mode == "get":
+        print(ctl.get_mode())
+
 
 if __name__ == "__main__":
     main()
