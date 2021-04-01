@@ -65,7 +65,6 @@ command invocations:
    optional arguments:
      -h, --help            show this help message and exit
 
-
 Using as root
 -------------
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
@@ -79,27 +78,46 @@ shell-wrapper along with the appropriate `/dev/sg*` device path:
    sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 dut
    sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 host
 
-Reliable names for the USB-SD-Mux
----------------------------------
+Using as normal user / Reliable names
+-------------------------------------
 
-A USB-SD-Mux comes with a pre-programmed serial that is also printed on the
-device itself. With the udev-rule in ``contib/udev/99-usbsdmux.rules``
-the sg-device for every USB-SD-Mux is linked to a device in
-``/dev/usb-sd-mux/id-*``.
+The example udev-rule in ``contib/udev/99-usbsdmux.rules`` serves two purposes:
 
-This makes sure you can access a USB-SD-Mux with the same name - independent
-of the order they are connected or the USB or the USB-topology.
+* Allow users currently logged into the system and users in the
+  ``plugdev`` group [1]_ to access connected USB-SD-Muxes.
+* Create a reliable path in the filesystem to access specific
+  USB-SD-Muxes based on their pre-programmed unique serial number.
+  This is useful when multiple USB-SD-Muxes are connect to a system,
+  as the enumeration-order, and thus the ``/dev/sg*`` numbering,
+  may differ between reboots.
+  The serial number is printed on a label attached to the device.
 
-You can get a list of connected USB-SD-Muxes, based on their unique serial numbers,
-by listing the contents of the ``/dev/usb-sd-mux/`` directory:
+Users of a Debian based distribution [1]_ can install the udev rule
+by cloning this repository and copying it to the appropriate location
+and reloading the active udev rules:
+
+.. code-block:: bash
+
+   $ git clone "https://github.com/linux-automation/usbsdmux.git"
+   $ sudo cp usbsdmux/contrib/udev/99-usbsdmux.rules /etc/udev/rules.d/
+   $ sudo udevadm control --reload-rules
+
+After reattaching the USB-SD-Mux you should get a list of connected USB-SD-Muxes,
+based on their unique serial numbers, by listing the contents of
+the ``/dev/usb-sd-mux/`` directory:
 
 .. code-block:: bash
 
     $ ls -l /dev/usb-sd-mux/
     total 0
-    lrwxrwxrwx 1 root root 6 Mar 31 11:21 id-000000000042 -> ../sg3
-    lrwxrwxrwx 1 root root 6 Mar 27 00:33 id-000000000078 -> ../sg2
-    lrwxrwxrwx 1 root root 6 Mar 24 09:51 id-000000000378 -> ../sg1
+    lrwxrwxrwx 1 root plugdev 6 Mar 31 11:21 id-000000000042 -> ../sg3
+    lrwxrwxrwx 1 root plugdev 6 Mar 27 00:33 id-000000000078 -> ../sg2
+    lrwxrwxrwx 1 root plugdev 6 Mar 24 09:51 id-000000000378 -> ../sg1
+
+.. [1] The ``plugdev`` group is used in Debian and Debian based distributions
+       (like Ubuntu and Linux Mint) to grant access to pluggable gadgets.
+       Depending on your Linux distribution you may want to create/use another
+       group for this purpose and adapt the ``udev`` rule accordingly.
 
 Troubleshooting
 ---------------
