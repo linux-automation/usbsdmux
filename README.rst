@@ -105,22 +105,35 @@ the sg-device for every USB-SD-Mux is linked to a device in
 This makes sure you can access a USB-SD-Mux with the same name - independent
 of the order they are connected or the USB or the USB-topology.
 
-Known issues
-------------
+You can get a list of connected USB-SD-Muxes, based on their unique serial numbers,
+by listing the contents of the ``/dev/usb-sd-mux/`` directory:
+
+.. code-block:: bash
+
+    $ ls -l /dev/usb-sd-mux/
+    total 0
+    lrwxrwxrwx 1 root root 6 Mar 31 11:21 id-000000000042 -> ../sg3
+    lrwxrwxrwx 1 root root 6 Mar 27 00:33 id-000000000078 -> ../sg2
+    lrwxrwxrwx 1 root root 6 Mar 24 09:51 id-000000000378 -> ../sg1
+
+Troubleshooting
+---------------
 
 * Some single board computers, especially Raspberry Pi model 4s, do not work with
   new/fast micro SD cards, due to drive strength issues at high frequencies.
   Use old and slow micro SD cards with these devices.
-  Another workaround is the replacement of resistors `R101` and `R102` with 0Ω
+  Another workaround is the replacement of resistors ``R101`` and ``R102`` with 0Ω
   parts. This modifications does however void the EMC compliance statement provided
   by the Linux Automation GmbH.
 * Some usecases, like hard to reach connectors or full-size SD cards, necessitate the
   use of adapters or extension cables, leading to the same drive strength issues
-  and workarounds as documented above.
-* The `usbsdmux-service` runs as `root`, as accessing `/dev/sg*` devices requires
+  and require the same workarounds as documented above.
+* The ``usbsdmux-service`` runs as ``root``, as accessing ``/dev/sg*`` devices requires
   `CAP_SYS_RAWIO <http://man7.org/linux/man-pages/man7/capabilities.7.html>`_.
   The service should, to improve security, drop all not needed capabilities after it is started.
-
+* In order for the ``/dev/sg*`` device to appear the ``sg`` kernel module needs to be loaded
+  into the kernel. This is usually done automatically by ``udev`` once the USB-SD-Mux is connected.
+  To manually load the kernel module run ``sudo modprobe sg``.
 
 .. |license| image:: https://img.shields.io/badge/license-LGPLv2.1-blue.svg
     :alt: LGPLv2.1
