@@ -18,12 +18,13 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-import struct
-import ctypes
-from .usb2642i2c import Usb2642I2C
-import time
 import argparse
+import ctypes
+import struct
 import sys
+import time
+
+from .usb2642i2c import Usb2642I2C
 from .ctypehelper import string_to_microchip_unicode_uint8_array,\
   string_to_uint8_array, list_to_uint8_array, to_pretty_hex
 

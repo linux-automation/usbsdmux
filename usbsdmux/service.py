@@ -18,8 +18,6 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-import sys
-
 """
 This service was intended as systemd-socket-activated unit and provided an
 interface to the USB-SD-Mux without the need for root privileges.
@@ -30,6 +28,8 @@ directly grant device access to the users.
 
 This file is kept here to notify users that have set up a systemd service.
 """
+
+import sys
 
 def main():
     print("The usage of usbsdmux-service is deprecated.", file=sys.stderr)

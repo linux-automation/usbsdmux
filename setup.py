@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-import fastentrypoints
-
 from setuptools import setup
+import fastentrypoints
 
 setup(
     name="usbsdmux",
