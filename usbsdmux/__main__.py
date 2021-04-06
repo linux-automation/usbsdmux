@@ -67,7 +67,7 @@ def main():
     if mode == "off":
         ctl.mode_disconnect()
 
-    elif mode == "dut" or mode == "client":
+    elif mode in ("dut", "client"):
         ctl.mode_DUT()
 
     elif mode == "host":
