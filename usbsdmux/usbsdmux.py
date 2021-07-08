@@ -53,11 +53,15 @@ class UsbSdMux(object):
     Returns currently selected mode as string
     """
     val = self._pca.read_register(1)[0]
+
+    # If the SD-Card is disabled we do not need to check for the selected mode.
+    # PWR_disable and DAT_disable are always switched at the same time.
+    # Let's assume it is sufficient to check one of both.
+    if val & self._PWR_disable:
+      return "off"
+
     if val & self._select_DUT:
        return "dut"
-    if val & self._PWR_disable:
-       return "off"
-
     return "host"
 
   def mode_disconnect(self, wait=True):
