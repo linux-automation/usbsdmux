@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 import argparse
+import errno
 import sys
 
 from .usbsdmux import UsbSdMux
@@ -64,17 +65,36 @@ def main():
     ctl = UsbSdMux(args.sg)
     mode = args.mode.lower()
 
-    if mode == "off":
-        ctl.mode_disconnect()
+    try:
+        if mode == "off":
+            ctl.mode_disconnect()
 
-    elif mode in ("dut", "client"):
-        ctl.mode_DUT()
+        elif mode in ("dut", "client"):
+            ctl.mode_DUT()
 
-    elif mode == "host":
-        ctl.mode_host()
+        elif mode == "host":
+            ctl.mode_host()
 
-    elif mode == "get":
-        print(ctl.get_mode())
+        elif mode == "get":
+            print(ctl.get_mode())
+
+    except FileNotFoundError as fnfe:
+        print(fnfe, file=sys.stderr)
+        sys.exit(1)
+    except PermissionError as perr:
+        print(perr, file=sys.stderr)
+        sys.exit(1)
+    except OSError as ose:
+        if ose.errno == errno.ENOTTY:
+            # ENOTTY is raised when an error occured when calling an ioctl
+            print(ose, file=sys.stderr)
+            print(
+                f"Does '{args.sg}' really point to an USB-SD-Mux?",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        else:
+            raise ose
 
 
 if __name__ == "__main__":
