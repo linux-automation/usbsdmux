@@ -361,11 +361,6 @@ class Usb2642I2C(object):
                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
                                        0x00, 0x00, 0x00], 16)
 
-    # First looked like the data block was prefixed with some magic.
-    # But at a second look this was not the case. Setting the length of this
-    # field to 0 bytes prevents any padding.
-    data_prefix = list_to_uint8_array([], 0)
-
     # Data in the captured USB-transfer was suffixed with some random data.
     # Experiments showed that 0x00 works fine too.
     # Since the buffer is zero-ed when initialized the suffix could be removed.
@@ -373,12 +368,10 @@ class Usb2642I2C(object):
 
     # Copying prefix, data and suffix to the SCSI command data-section
     payload = (ctypes.c_uint8*512)()
-    for i in range(ctypes.sizeof(data_prefix)):
-      payload[i] = data_prefix[i]
     for i in range(ctypes.sizeof(data)):
-      payload[i+ctypes.sizeof(data_prefix)] = data[i]
+      payload[i] = data[i]
     for i in range(ctypes.sizeof(data_suffix)):
-      payload[i+ctypes.sizeof(data_prefix)+ctypes.sizeof(data)] = data_suffix[i]
+      payload[i+ctypes.sizeof(data)] = data_suffix[i]
 
     # Perform the actual SCSI transfer
     self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, payload)
