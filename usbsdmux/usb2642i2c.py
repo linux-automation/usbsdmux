@@ -205,7 +205,7 @@ class Usb2642I2C(object):
     """
 
     MAXLEN = 512
-    count = len(data) if len(data) <= MAXLEN else MAXLEN
+    count = min(len(data), MAXLEN)
     dataArray = (ctypes.c_uint8 * MAXLEN)()
     for i in range(count):
       dataArray[i] = data[i]
@@ -233,13 +233,13 @@ class Usb2642I2C(object):
     """
 
     MAXLEN = 512
-    readCount = readLength if readLength <= MAXLEN else MAXLEN
+    readCount = min(readLength, MAXLEN)
     readDataArray = (ctypes.c_uint8 * MAXLEN)()
 
     MAXLEN = 9
-    writeCount = len(writeData) if len(writeData) <= MAXLEN else MAXLEN
+    writeCount = min(len(writeData), MAXLEN)
     writeDataArray = (ctypes.c_uint8 * MAXLEN)()
-    for i in range(min(MAXLEN, len(writeData))):
+    for i in range(writeCount):
       writeDataArray[i] = writeData[i]
 
     slaveWriteAddr = (slaveAddr*2)&0xFF
