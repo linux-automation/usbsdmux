@@ -205,10 +205,9 @@ class Usb2642I2C(object):
     """
 
     MAXLEN = 512
-    count = len(data) if len(data) <= MAXLEN else MAXLEN
+    count = min(len(data), MAXLEN)
     dataArray = (ctypes.c_uint8 * MAXLEN)()
-    for i in range(count):
-      dataArray[i] = data[i]
+    dataArray[:count] = data[:count]
 
     slaveWriteAddr = (slaveAddr*2)&0xFF
 
@@ -233,14 +232,13 @@ class Usb2642I2C(object):
     """
 
     MAXLEN = 512
-    readCount = readLength if readLength <= MAXLEN else MAXLEN
+    readCount = min(readLength, MAXLEN)
     readDataArray = (ctypes.c_uint8 * MAXLEN)()
 
     MAXLEN = 9
-    writeCount = len(writeData) if len(writeData) <= MAXLEN else MAXLEN
+    writeCount = min(len(writeData), MAXLEN)
     writeDataArray = (ctypes.c_uint8 * MAXLEN)()
-    for i in range(min(MAXLEN, len(writeData))):
-      writeDataArray[i] = writeData[i]
+    writeDataArray[:writeCount] = writeData[:writeCount]
 
     slaveWriteAddr = (slaveAddr*2)&0xFF
     slaveReadAddr = slaveWriteAddr + 1
@@ -361,11 +359,6 @@ class Usb2642I2C(object):
                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
                                        0x00, 0x00, 0x00], 16)
 
-    # First looked like the data block was prefixed with some magic.
-    # But at a second look this was not the case. Setting the length of this
-    # field to 0 bytes prevents any padding.
-    data_prefix = list_to_uint8_array([], 0)
-
     # Data in the captured USB-transfer was suffixed with some random data.
     # Experiments showed that 0x00 works fine too.
     # Since the buffer is zero-ed when initialized the suffix could be removed.
@@ -373,12 +366,8 @@ class Usb2642I2C(object):
 
     # Copying prefix, data and suffix to the SCSI command data-section
     payload = (ctypes.c_uint8*512)()
-    for i in range(ctypes.sizeof(data_prefix)):
-      payload[i] = data_prefix[i]
-    for i in range(ctypes.sizeof(data)):
-      payload[i+ctypes.sizeof(data_prefix)] = data[i]
-    for i in range(ctypes.sizeof(data_suffix)):
-      payload[i+ctypes.sizeof(data_prefix)+ctypes.sizeof(data)] = data_suffix[i]
+    payload[:ctypes.sizeof(data)] = data
+    payload[ctypes.sizeof(data):ctypes.sizeof(data) + ctypes.sizeof(data_suffix)] = data_suffix
 
     # Perform the actual SCSI transfer
     self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, payload)
@@ -429,11 +418,7 @@ class Usb2642I2C(object):
             "SCSI-Transaction ended with status {}. I2C-Transaction has probably failed.".\
                                  format(sgio.status))
 
-    ret = []
-    for i in range(min(len(data), readLength)):
-      ret.append(data[i])
-
-    return ret
+    return list(data[:readLength])
 
   def write_to(self, i2cAddr, data):
     """
