@@ -1,3 +1,3 @@
 # USB-SD-Mux
-ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]", ATTRS{manufacturer}=="Pengutronix", ATTRS{product}=="usb-sd-mux*", SYMLINK="usb-sd-mux/id-$attr{serial}", TAG+="uaccess", GROUP="plugdev"
-ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]", ATTRS{manufacturer}=="Linux Automation GmbH", ATTRS{product}=="usb-sd-mux*", SYMLINK="usb-sd-mux/id-$attr{serial}", TAG+="uaccess", GROUP="plugdev"
+ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]*", ATTRS{manufacturer}=="Pengutronix", ATTRS{product}=="usb-sd-mux*", SYMLINK="usb-sd-mux/id-$attr{serial}", TAG+="uaccess", GROUP="plugdev"
+ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]*", ATTRS{manufacturer}=="Linux Automation GmbH", ATTRS{product}=="usb-sd-mux*", SYMLINK="usb-sd-mux/id-$attr{serial}", TAG+="uaccess", GROUP="plugdev"
