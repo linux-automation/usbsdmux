@@ -24,22 +24,22 @@ import sys
 
 from .usbsdmux import UsbSdMux
 
+
 def main():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawTextHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
     parser.add_argument(
         "mode",
         help="Action:\n"
-             "get - return selected mode\n"
-             "dut - set to dut mode\n"
-             "client - set to dut mode (alias for dut)\n"
-             "host - set to host mode\n"
-             "off - set to off mode",
+        "get - return selected mode\n"
+        "dut - set to dut mode\n"
+        "client - set to dut mode (alias for dut)\n"
+        "host - set to host mode\n"
+        "off - set to off mode",
         choices=["get", "dut", "client", "host", "off"],
-        type=str.lower)
+        type=str.lower,
+    )
 
     # These arguments were previously used for the client/service
     # based method to grant USB-SD-Mux access to non-root users.
@@ -47,20 +47,19 @@ def main():
     # rules and a change to how the /dev/sg* devices are accessed.
     # Display a warning but do not fail when these are used so
     # existing scripts do not break and can be upgraded gracefully.
-    parser.add_argument("-d", "--direct", help=argparse.SUPPRESS,
-                        action="store_true", default=None)
-    parser.add_argument("-c", "--client", help=argparse.SUPPRESS,
-                        action="store_true", default=None)
-    parser.add_argument("-s", "--socket", help=argparse.SUPPRESS,
-                        default=None)
+    parser.add_argument("-d", "--direct", help=argparse.SUPPRESS, action="store_true", default=None)
+    parser.add_argument("-c", "--client", help=argparse.SUPPRESS, action="store_true", default=None)
+    parser.add_argument("-s", "--socket", help=argparse.SUPPRESS, default=None)
 
     args = parser.parse_args()
 
     if any(arg is not None for arg in (args.direct, args.client, args.socket)):
-        print("usbsdmux: usage of -s/-c/-d arguments is deprecated "
-              "as the service/client split is no longer required. "
-              "Please upgrade your scripts to not supply either of these arguments",
-              file=sys.stderr)
+        print(
+            "usbsdmux: usage of -s/-c/-d arguments is deprecated "
+            "as the service/client split is no longer required. "
+            "Please upgrade your scripts to not supply either of these arguments",
+            file=sys.stderr,
+        )
 
     ctl = UsbSdMux(args.sg)
     mode = args.mode.lower()
