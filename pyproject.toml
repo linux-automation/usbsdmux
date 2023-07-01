@@ -1,0 +1,7 @@
+[tool.black]
+line-length = 119
+
+[tool.flake8]
+max-line-length = 119
+count = true
+exclude = "build,debian,dist,envs,fastentrypoints.py,__pycache__,contrib,setup.py,venv,usbsdmux.egg-info,.tox"
