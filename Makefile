@@ -2,6 +2,7 @@ PYTHON=python3
 
 PYTHON_ENV_ROOT=envs
 PYTHON_PACKAGING_VENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging-env
+PYTHON_TESTING_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
 
 .PHONY: clean
 
@@ -30,3 +31,18 @@ clean:
 	rm -rf $(PYTHON_ENV_ROOT)
 
 envs: env packaging-env
+
+# testing #####################################################################
+$(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.qa.txt
+	rm -rf $(PYTHON_TESTING_ENV) && \
+	$(PYTHON) -m venv $(PYTHON_TESTING_ENV) && \
+	. $(PYTHON_TESTING_ENV)/bin/activate && \
+	pip install pip --upgrade && \
+	pip install -r ./REQUIREMENTS.qa.txt && \
+	date > $(PYTHON_TESTING_ENV)/.created
+
+qa: $(PYTHON_TESTING_ENV)/.created
+	. $(PYTHON_TESTING_ENV)/bin/activate && \
+	black --check --diff . && \
+	flake8
+
