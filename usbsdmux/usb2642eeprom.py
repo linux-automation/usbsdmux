@@ -20,18 +20,14 @@
 
 import argparse
 import ctypes
-import struct
-import sys
 import time
 
-from .usb2642i2c import Usb2642I2C
 from .ctypehelper import (
     string_to_microchip_unicode_uint8_array,
     string_to_uint8_array,
     list_to_uint8_array,
-    to_pretty_hex,
 )
-
+from .usb2642i2c import Usb2642I2C
 
 """
 This module provides the high-level interface needed to write the contents of
@@ -236,7 +232,7 @@ class USB2642Eeprom(object):
             lowerOffset = lower - addr
             upperOffset = upper - addr
 
-            self.i2c.write_to(self.addr, [lower] + data[lowerOffset : (upperOffset + 1)])
+            self.i2c.write_to(self.addr, [lower] + data[lowerOffset : (upperOffset + 1)])  # noqa: E203
             time.sleep(0.1)
             offset = upperOffset + 1
 
@@ -268,7 +264,8 @@ class USB2642Eeprom(object):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="This tool writes and verifies the configuration EEPROM of the usb-sd-mux with the information given on the command line."
+        description="This tool writes and verifies the configuration EEPROM of the usb-sd-mux "
+        "with the information given on the command line."
     )
     parser.add_argument("sg", help="The /dev/sg* which is used.")
     parser.add_argument(
