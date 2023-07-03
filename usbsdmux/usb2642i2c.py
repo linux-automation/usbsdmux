@@ -20,13 +20,10 @@
 
 import ctypes
 import fcntl
-from .ctypehelper import (
-    string_to_microchip_unicode_uint8_array,
-    string_to_uint8_array,
-    list_to_uint8_array,
-    to_pretty_hex,
-)
 
+from .ctypehelper import (
+    list_to_uint8_array,
+)
 
 """
 This modules provides an interface to use the auxiliary and configuration
@@ -370,7 +367,7 @@ class Usb2642I2C(object):
         # Copying prefix, data and suffix to the SCSI command data-section
         payload = (ctypes.c_uint8 * 512)()
         payload[: ctypes.sizeof(data)] = data
-        payload[ctypes.sizeof(data) : ctypes.sizeof(data) + ctypes.sizeof(data_suffix)] = data_suffix
+        payload[ctypes.sizeof(data) : ctypes.sizeof(data) + ctypes.sizeof(data_suffix)] = data_suffix  # noqa: E203
 
         # Perform the actual SCSI transfer
         self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, payload)
