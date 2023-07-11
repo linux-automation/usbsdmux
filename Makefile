@@ -34,7 +34,7 @@ envs: env packaging-env
 
 # testing #####################################################################
 $(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.qa.txt
-	rm -rf $(PYTHON_TESTING_DEV) && \
+	rm -rf $(PYTHON_TESTING_ENV) && \
 	$(PYTHON) -m venv $(PYTHON_TESTING_ENV) && \
 	. $(PYTHON_TESTING_ENV)/bin/activate && \
 	pip install pip --upgrade && \
