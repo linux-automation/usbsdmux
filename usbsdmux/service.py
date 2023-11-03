@@ -31,6 +31,7 @@ This file is kept here to notify users that have set up a systemd service.
 
 import sys
 
+
 def main():
     print("The usage of usbsdmux-service is deprecated.", file=sys.stderr)
     print("Access to USB-SD-Mux devices is now controlled by a new set of udev rules.", file=sys.stderr)
