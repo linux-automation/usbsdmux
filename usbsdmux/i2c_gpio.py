@@ -19,55 +19,40 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 from .usb2642i2c import Usb2642I2C
+from abc import ABC
 
 
-class Pca9536(object):
-    """
-    Interface to control a Pca9536 that is connected to the auxiliary-I2C of a
-    Microchip USB2642.
-    """
-
-    # The PCA9536 I2C Slave Address in 7-Bit Format
-    _I2cAddr = 0x41
-
-    # Registers inside the PCA9536
+class I2cGpio(ABC):
+    # Registers inside the supported GPIO expanders
     _register_inputPort = 0x00
     _register_outputPort = 0x01
     _register_polarity = 0x02
     _register_configuration = 0x03
 
-    gpio_0 = 0x01
-    gpio_1 = 0x02
-    gpio_2 = 0x04
-    gpio_3 = 0x08
-
+    # Values for the configuration register
     _direction_output = 0
     _direction_input = 1
 
     def __init__(self, sg):
         """
-        Create a new Pca9536-controller.
-
         Arguments:
         sg -- /dev/sg* to use.
         """
-        self.sg = sg
-
         self._usb = Usb2642I2C(sg)
 
-        # After POR all Pins are Inputs. This value will from now on mirror the
-        # value of die _register_configuration
+        # After POR all Pins are Inputs.
+        # This value mirrors the value of the GPIO configuration
         self._directionMask = 0xFF
 
     def _write_register(self, register, value):
         """
-        Writes a register on the Pca9536 with a given value.
+        Writes a register on the GPIO-expander with a given value.
         """
         self._usb.write_to(self._I2cAddr, [register, value])
 
     def read_register(self, addr, len=1):
         """
-        Returns a register of the Pca9536.
+        Returns a register of the GPIO-expander.
         """
         return self._usb.write_read_to(self._I2cAddr, [addr], len)
 
@@ -76,7 +61,7 @@ class Pca9536(object):
         Sets the corresponding pins as outputs.
 
         Arguments:
-        pins -- Combination of Pca9536.gpio_*
+        pins -- Combination of I2cGpio.gpio_*
         """
         self._directionMask = self._directionMask & (~pins)
         self._write_register(self._register_configuration, self._directionMask)
@@ -86,7 +71,7 @@ class Pca9536(object):
         Sets the corresponding pins as inputs.
 
         Arguments:
-        pins -- Combination of Pca9536.gpio_*
+        pins -- Combination of I2cGpio.gpio_*
         """
         self._directionMask = self._directionMask | pins
         self._write_register(self._register_configuration, self._directionMask)
@@ -97,6 +82,21 @@ class Pca9536(object):
         Pins configured as Inputs are not affected by this.
 
         Arguments:
-        values -- Combination of Pca9536.gpio_*
+        values -- Combination of I2cGpio.gpio_*
         """
         self._write_register(self._register_outputPort, values)
+
+
+class Pca9536(I2cGpio):
+    """
+    Interface to control a Pca9536 that is connected to the auxiliary-I2C of a
+    Microchip USB2642.
+    """
+
+    # The PCA9536 I2C slave Address in 7-Bit Format
+    _I2cAddr = 0x41
+
+    gpio_0 = 0x01
+    gpio_1 = 0x02
+    gpio_2 = 0x04
+    gpio_3 = 0x08
