@@ -100,3 +100,22 @@ class Pca9536(I2cGpio):
     gpio_1 = 0x02
     gpio_2 = 0x04
     gpio_3 = 0x08
+
+
+class Tca6408(I2cGpio):
+    """
+    Interface to control a TCA6408 that is connected to the auxiliary-I2C of a
+    Microchip USB2642.
+    """
+
+    # The TCA6408 I2C slave Address in 7-Bit Format
+    _I2cAddr = 0b0100_000
+
+    gpio_0 = 0x01
+    gpio_1 = 0x02
+    gpio_2 = 0x04
+    gpio_3 = 0x08
+    gpio_4 = 0x10
+    gpio_5 = 0x20
+    gpio_6 = 0x40
+    gpio_7 = 0x80
