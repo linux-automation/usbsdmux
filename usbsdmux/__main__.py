@@ -22,24 +22,26 @@ import argparse
 import errno
 import sys
 
-from .usbsdmux import UsbSdMux
+from .usbsdmux import autoselect_driver, UnknownUsbSdMuxRevisionException
 
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
-    parser.add_argument(
-        "mode",
-        help="Action:\n"
-        "get - return selected mode\n"
-        "dut - set to dut mode\n"
-        "client - set to dut mode (alias for dut)\n"
-        "host - set to host mode\n"
-        "off - set to off mode",
-        choices=["get", "dut", "client", "host", "off"],
-        type=str.lower,
-    )
+    subparsers = parser.add_subparsers(help="Supply one of the following commands to interact with the device")
+    subparsers.required = True
+    subparsers.dest = "mode"
+
+    subparsers.add_parser("get", help="Read the current state of the USB-SD-Mux")
+    subparsers.add_parser("dut", help="Switch to the DUT")
+    subparsers.add_parser("client", help="Switch to the DUT")
+    subparsers.add_parser("host", help="Switch to the host")
+    subparsers.add_parser("off", help="Disconnect from host and DUT")
+
+    parser_gpio = subparsers.add_parser("gpio", help="Manipulate a GPIO (open drain output only)")
+    parser_gpio.add_argument("gpio", help="The GPIO to change", choices=[0, 1], type=int)
+    parser_gpio.add_argument("action", help="What to do with the GPIO", choices=["low", "0", "high", "1", "get"])
 
     # These arguments were previously used for the client/service
     # based method to grant USB-SD-Mux access to non-root users.
@@ -61,8 +63,13 @@ def main():
             file=sys.stderr,
         )
 
-    ctl = UsbSdMux(args.sg)
-    mode = args.mode.lower()
+    try:
+        ctl = autoselect_driver(args.sg)
+    except UnknownUsbSdMuxRevisionException as e:
+        print(e, file=sys.stderr)
+        print(f"Does {args.sg} really point to an USB-SD-Mux?")
+        sys.exit(1)
+    mode = args.mode
 
     try:
         if mode == "off":
@@ -77,6 +84,14 @@ def main():
         elif mode == "get":
             print(ctl.get_mode())
 
+        elif mode == "gpio":
+            if args.action == "get":
+                print(ctl.gpio_get(args.gpio))
+            elif args.action in ["0", "low"]:
+                ctl.gpio_set_low(args.gpio)
+            elif args.action in ["1", "high"]:
+                ctl.gpio_set_high(args.gpio)
+
     except FileNotFoundError as fnfe:
         print(fnfe, file=sys.stderr)
         sys.exit(1)
@@ -85,7 +100,7 @@ def main():
         sys.exit(1)
     except OSError as ose:
         if ose.errno == errno.ENOTTY:
-            # ENOTTY is raised when an error occured when calling an ioctl
+            # ENOTTY is raised when an error occurred when calling an ioctl
             print(ose, file=sys.stderr)
             print(
                 f"Does '{args.sg}' really point to an USB-SD-Mux?",
@@ -94,6 +109,12 @@ def main():
             sys.exit(1)
         else:
             raise ose
+    except NotImplementedError:
+        print(
+            "This USB-SD-Mux does not support GPIOs.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 if __name__ == "__main__":
