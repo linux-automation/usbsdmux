@@ -40,10 +40,6 @@ class I2cGpio(ABC):
         """
         self._usb = Usb2642I2C(sg)
 
-        # After POR all Pins are Inputs.
-        # This value mirrors the value of the GPIO configuration
-        self._directionMask = 0xFF
-
     def _write_register(self, register, value):
         """
         Writes a register on the GPIO-expander with a given value.
@@ -63,8 +59,9 @@ class I2cGpio(ABC):
         Arguments:
         pins -- Combination of I2cGpio.gpio_*
         """
-        self._directionMask = self._directionMask & (~pins)
-        self._write_register(self._register_configuration, self._directionMask)
+        direction = self.read_register(self._register_configuration)[0]
+        direction = (direction & ~pins) & 0xFF
+        self._write_register(self._register_configuration, direction)
 
     def set_pin_to_input(self, pins):
         """
@@ -73,8 +70,9 @@ class I2cGpio(ABC):
         Arguments:
         pins -- Combination of I2cGpio.gpio_*
         """
-        self._directionMask = self._directionMask | pins
-        self._write_register(self._register_configuration, self._directionMask)
+        direction = self.read_register(self._register_configuration)[0]
+        direction = direction | pins
+        self._write_register(self._register_configuration, direction)
 
     def output_values(self, values: int, bitmask: int = 0xFF):
         """
