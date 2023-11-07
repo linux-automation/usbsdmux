@@ -76,15 +76,25 @@ class I2cGpio(ABC):
         self._directionMask = self._directionMask | pins
         self._write_register(self._register_configuration, self._directionMask)
 
-    def output_values(self, values):
+    def output_values(self, values: int, bitmask: int = 0xFF):
         """
         Writes the given values to the GPIO-expander.
         Pins configured as Inputs are not affected by this.
 
         Arguments:
         values -- Combination of I2cGpio.gpio_*
+        bitmask -- Only update bits in the register that are '1' in the bitmask
         """
-        self._write_register(self._register_outputPort, values)
+
+        if bitmask == 0xFF:
+            # trivial case: Let's just write the value
+            self._write_register(self._register_outputPort, values)
+        else:
+            # complex case: Let's do a read-modify-write
+            val = self.read_register(self._register_outputPort, 1)[0]
+            val = (val & ~bitmask) & 0xFF  # reset masked bits
+            val = val | (values & bitmask)  # set bits set in values and bitmask
+            self._write_register(self._register_outputPort, val)
 
 
 class Pca9536(I2cGpio):
