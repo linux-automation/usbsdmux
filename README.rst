@@ -81,7 +81,7 @@ shell-wrapper along with the appropriate `/dev/sg*` device path:
 Using as normal user / Reliable names
 -------------------------------------
 
-The example udev-rule in ``contib/udev/99-usbsdmux.rules`` serves two purposes:
+The example udev-rule in ``contrib/udev/99-usbsdmux.rules`` serves two purposes:
 
 * Allow users currently logged into the system and users in the
   ``plugdev`` group [1]_ to access connected USB-SD-Muxes.
