@@ -46,11 +46,11 @@ class I2cGpio(ABC):
         """
         self._usb.write_to(self._I2cAddr, [register, value])
 
-    def read_register(self, addr, len=1):
+    def _read_register(self, addr):
         """
         Returns a register of the GPIO-expander.
         """
-        return self._usb.write_read_to(self._I2cAddr, [addr], len)
+        return self._usb.write_read_to(self._I2cAddr, [addr], 1)[0]
 
     def set_pin_to_output(self, pins):
         """
@@ -59,7 +59,7 @@ class I2cGpio(ABC):
         Arguments:
         pins -- Combination of I2cGpio.gpio_*
         """
-        direction = self.read_register(self._register_configuration)[0]
+        direction = self._read_register(self._register_configuration)
         direction = (direction & ~pins) & 0xFF
         self._write_register(self._register_configuration, direction)
 
@@ -70,9 +70,21 @@ class I2cGpio(ABC):
         Arguments:
         pins -- Combination of I2cGpio.gpio_*
         """
-        direction = self.read_register(self._register_configuration)[0]
+        direction = self._read_register(self._register_configuration)
         direction = direction | pins
         self._write_register(self._register_configuration, direction)
+
+    def get_gpio_config(self):
+        """
+        Returns the state of the configuration register.
+        """
+        return self._read_register(self._register_configuration)
+
+    def get_input_values(self):
+        """
+        Reads the value currently present on the port from the input register.
+        """
+        return self._read_register(self._register_inputPort)
 
     def output_values(self, values: int, bitmask: int = 0xFF):
         """
@@ -89,7 +101,7 @@ class I2cGpio(ABC):
             self._write_register(self._register_outputPort, values)
         else:
             # complex case: Let's do a read-modify-write
-            val = self.read_register(self._register_outputPort, 1)[0]
+            val = self._read_register(self._register_outputPort)
             val = (val & ~bitmask) & 0xFF  # reset masked bits
             val = val | (values & bitmask)  # set bits set in values and bitmask
             self._write_register(self._register_outputPort, val)
