@@ -159,6 +159,7 @@ class UsbSdMuxClassic(UsbSdMux):
 
         if val & self._select_DUT:
             return "dut"
+
         return "host"
 
     def mode_disconnect(self, wait=True):
@@ -244,6 +245,7 @@ class UsbSdMuxFast(UsbSdMux):
 
         if val & self._select_DUT:
             return "dut"
+
         return "host"
 
     def mode_disconnect(self, wait=True):

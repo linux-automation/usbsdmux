@@ -114,7 +114,7 @@ class Pca9536(I2cGpio):
     """
 
     # The PCA9536 I2C slave Address in 7-Bit Format
-    _I2cAddr = 0x41
+    _I2cAddr = 0b100_0001
 
     gpio_0 = 0x01
     gpio_1 = 0x02
@@ -129,7 +129,7 @@ class Tca6408(I2cGpio):
     """
 
     # The TCA6408 I2C slave Address in 7-Bit Format
-    _I2cAddr = 0b0100_000
+    _I2cAddr = 0b010_0000
 
     gpio_0 = 0x01
     gpio_1 = 0x02
