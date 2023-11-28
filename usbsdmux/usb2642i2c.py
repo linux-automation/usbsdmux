@@ -252,7 +252,7 @@ class Usb2642I2C(object):
             I2cReadPhaseLenHigh=(readCount >> 8) & 0xFF,
             I2cReadPhaseLenLow=readCount & 0xFF,
             I2cWritePhaseLen=writeCount,
-            I2cCommandPayload=writeDataArray,
+            I2cWritePayload=writeDataArray,
         )
 
         return cmd, readDataArray
