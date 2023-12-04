@@ -18,7 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-from .usb2642i2c import Usb2642I2C
+from .usb2642 import Usb2642
 from abc import ABC
 
 
@@ -38,7 +38,7 @@ class I2cGpio(ABC):
         Arguments:
         sg -- /dev/sg* to use.
         """
-        self._usb = Usb2642I2C(sg)
+        self._usb = Usb2642(sg)
 
     def _write_register(self, register, value):
         """

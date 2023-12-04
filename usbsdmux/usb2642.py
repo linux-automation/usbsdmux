@@ -43,7 +43,7 @@ class I2cTransactionFailed(Exception):
     pass
 
 
-class Usb2642I2C(object):
+class Usb2642(object):
     """
     This class provides an interface to interact with devices on a Microchip
     USB2642 auxiliary I2C Bus and to write configuration to an EEPROM on the
@@ -77,7 +77,7 @@ class Usb2642I2C(object):
 
     def __init__(self, sg):
         """
-        Create a new USB2642I2C-Interface wrapper.
+        Create a new USB2642-Interface wrapper.
 
         Arguments:
         sg -- The sg-device to use. E.g. "/dev/sg1"

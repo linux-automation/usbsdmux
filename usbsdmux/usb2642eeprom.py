@@ -27,7 +27,7 @@ from .ctypehelper import (
     string_to_uint8_array,
     list_to_uint8_array,
 )
-from .usb2642i2c import Usb2642I2C
+from .usb2642 import Usb2642
 
 """
 This module provides the high-level interface needed to write the contents of
@@ -53,7 +53,7 @@ class USB2642Eeprom(object):
         i2c_addr -- 7-Bit Address of the EEPROM to use. Defaults to 0x50 for the
                     configuration-EEPROM. You probably do NOT want to override this.
         """
-        self.i2c = Usb2642I2C(sg)
+        self.i2c = Usb2642(sg)
         self.addr = i2c_addr
 
     class _EepromStruct(ctypes.Structure):
