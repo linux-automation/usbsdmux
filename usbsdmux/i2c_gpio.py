@@ -40,6 +40,9 @@ class I2cGpio(ABC):
         """
         self._usb = Usb2642(sg)
 
+    def get_usb(self):
+        return self._usb
+
     def _write_register(self, register, value):
         """
         Writes a register on the GPIO-expander with a given value.
