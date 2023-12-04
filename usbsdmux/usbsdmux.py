@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import abc
 
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -57,12 +56,11 @@ def autoselect_driver(sg):
         ) from e
 
 
-class UsbSdMux(abc.ABC):
+class UsbSdMux:
     """
     Class to provide an interface for the multiplexer on an usb-sd-mux.
     """
 
-    @abc.abstractmethod
     def __init__(self, sg):
         """
         Create a new UsbSdMux.
@@ -70,16 +68,14 @@ class UsbSdMux(abc.ABC):
         Arguments:
         sg -- /dev/sg* to use
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def get_mode(self):
         """
         Returns currently selected mode as string
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def mode_disconnect(self, wait=True):
         """
         Will disconnect the Micro-SD Card from both host and DUT.
@@ -88,9 +84,8 @@ class UsbSdMux(abc.ABC):
         wait -- Command will block for some time until the voltage-supply of
         the sd-card is known to be close to zero
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def mode_DUT(self, wait=True):
         """
         Switches the MicroSD-Card to the DUT.
@@ -98,9 +93,8 @@ class UsbSdMux(abc.ABC):
         This Command will issue a disconnect first to make sure the SD-card
         has been properly disconnected from both sides and its supply was off.
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def mode_host(self, wait=True):
         """
         Switches the MicroSD-Card to the Host.
@@ -108,28 +102,25 @@ class UsbSdMux(abc.ABC):
         This Command will issue a disconnect first to make sure the SD-card
         has been properly disconnected from both sides and its supply was off.
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def gpio_get(self, gpio):
         """
         Reads the value of gpio and returns "high" or "low"
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def gpio_set_high(self, gpio):
         """
         Sets a gpio high.
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def gpio_set_low(self, gpio):
         """
         Sets a gpio low.
         """
-        pass
+        raise NotImplementedError()
 
 
 class UsbSdMuxClassic(UsbSdMux):
@@ -188,15 +179,6 @@ class UsbSdMuxClassic(UsbSdMux):
 
         # now connect data and power
         self._pca.output_values(self._DAT_enable | self._PWR_enable | self._select_HOST | self._card_inserted)
-
-    def gpio_get(self, gpio):
-        raise NotImplementedError()
-
-    def gpio_set_high(self, gpio):
-        raise NotImplementedError()
-
-    def gpio_set_low(self, gpio):
-        raise NotImplementedError()
 
 
 class UsbSdMuxFast(UsbSdMux):
