@@ -28,13 +28,21 @@ Under the hood this tool provides interfaces to access the following features of
 * Writing an I2C Configuration-EEPROM on the configuration I2C.
   This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
 
-Debian Package
---------------
+Packages
+--------
+
+.. raw:: html
+
+   <a href="https://repology.org/project/usbsdmux/versions">
+      <img src="https://repology.org/badge/vertical-allrepos/usbsdmux.svg?exclude_unsupported=1" alt="Packaging status" align="right">
+   </a>
 
 This tool is `packaged <https://packages.debian.org/search?keywords=usbsdmux&searchon=names&exact=1>`_ in Debian 12
 (aka *bookworm*) and later.
 The package ships the ``usbsdmux`` tool and the corresponding *udev* -rules.
 So you can simply ``apt install usbsdmux`` and skip all installation steps below.
+
+Packages also exist for `some other distributions <https://repology.org/project/usbsdmux/versions>`_.
 
 Quickstart
 ----------
