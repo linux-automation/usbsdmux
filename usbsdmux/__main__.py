@@ -21,14 +21,18 @@
 import argparse
 import errno
 import sys
+import json
 
-from .usbsdmux import autoselect_driver, UnknownUsbSdMuxRevisionException
+from .usbsdmux import autoselect_driver, UnknownUsbSdMuxRevisionException, NotInHostModeException
 
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
+    format_parser = parser.add_mutually_exclusive_group()
+    format_parser.add_argument("--json", help="Format output as json. Useful for scripting.", action="store_true")
+
     subparsers = parser.add_subparsers(help="Supply one of the following commands to interact with the device")
     subparsers.required = True
     subparsers.dest = "mode"
@@ -42,6 +46,8 @@ def main():
     parser_gpio = subparsers.add_parser("gpio", help="Manipulate a GPIO (open drain output only)")
     parser_gpio.add_argument("gpio", help="The GPIO to change", choices=[0, 1], type=int)
     parser_gpio.add_argument("action", help="What to do with the GPIO", choices=["low", "0", "high", "1", "get"])
+
+    subparsers.add_parser("info", help="Show information about the SD card")
 
     # These arguments were previously used for the client/service
     # based method to grant USB-SD-Mux access to non-root users.
@@ -92,6 +98,15 @@ def main():
             elif args.action in ["1", "high"]:
                 ctl.gpio_set_high(args.gpio)
 
+        elif mode == "info":
+            info = ctl.get_card_info()
+            if args.json:
+                print(json.dumps(info, indent=4))
+            else:
+                print("SCR: {}".format(info["scr"]["raw"]))
+                print("CID: {}".format(info["cid"]["raw"]))
+                print("CSD: {}".format(info["csd"]["raw"]))
+
     except FileNotFoundError as fnfe:
         print(fnfe, file=sys.stderr)
         sys.exit(1)
@@ -109,6 +124,12 @@ def main():
             sys.exit(1)
         else:
             raise ose
+    except NotInHostModeException:
+        print(
+            "Card information is only available in host mode.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     except NotImplementedError:
         print(
             "This USB-SD-Mux does not support GPIOs.",

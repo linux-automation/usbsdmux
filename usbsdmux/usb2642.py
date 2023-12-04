@@ -20,6 +20,7 @@
 
 import ctypes
 import fcntl
+from time import sleep
 
 from .ctypehelper import (
     list_to_uint8_array,
@@ -40,6 +41,10 @@ class IoctlFailed(Exception):
 
 
 class I2cTransactionFailed(Exception):
+    pass
+
+
+class SDTransactionFailed(Exception):
     pass
 
 
@@ -450,3 +455,35 @@ class Usb2642(object):
             raise I2cTransactionFailed(
                 "SCSI-Transaction ended with status {}. I2C-Transaction has probably failed.".format(sgio.status)
             )
+
+    def _read_register(self, reg, size, retries=5):
+        scsiCommand = list_to_uint8_array(
+            [0xCF, reg, 0x00, 0x00, size, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], 16
+        )
+
+        while True:
+            databuffer = ctypes.c_buffer(size)
+            _, _, sgio = self._call_IOCTL(scsiCommand, self._SG_DXFER_FROM_DEV, databuffer)
+
+            if retries and sgio.status == 2:
+                sleep(0.5)
+                retries -= 1
+                continue
+
+            if sgio.status != 0:
+                raise SDTransactionFailed(
+                    "SCSI Transaction ended with status {}. SD Transaction has probably failed.".format(sgio.status)
+                )
+
+            break
+
+        return databuffer.raw
+
+    def read_cid(self):
+        return self._read_register(0x18, 16)
+
+    def read_csd(self):
+        return self._read_register(0x1A, 16)
+
+    def read_scr(self):
+        return self._read_register(0x1B, 8)

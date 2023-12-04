@@ -28,6 +28,10 @@ class UnknownUsbSdMuxRevisionException(Exception):
     pass
 
 
+class NotInHostModeException(Exception):
+    pass
+
+
 def autoselect_driver(sg):
     """
     Create a new UsbSdMux with the correct driver for the device at /dev/<sg>
@@ -122,6 +126,27 @@ class UsbSdMux:
         """
         raise NotImplementedError()
 
+    def get_card_info(self):
+        if self.get_mode() != "host":
+            raise NotInHostModeException()
+
+        result = {}
+
+        scr = self._usb.read_scr()
+        result["scr"] = {
+            "raw": scr.hex(),
+        }
+        cid = self._usb.read_cid()
+        result["cid"] = {
+            "raw": cid.hex(),
+        }
+        csd = self._usb.read_csd()
+        result["csd"] = {
+            "raw": csd.hex(),
+        }
+
+        return result
+
 
 class UsbSdMuxClassic(UsbSdMux):
     _DAT_enable = 0x00
@@ -138,6 +163,7 @@ class UsbSdMuxClassic(UsbSdMux):
 
     def __init__(self, sg):
         self._pca = Pca9536(sg)
+        self._usb = self._pca.get_usb()
 
     def get_mode(self):
         val = self._pca.get_input_values()
@@ -200,6 +226,7 @@ class UsbSdMuxFast(UsbSdMux):
     def __init__(self, sg):
         self._tca = Tca6408(sg)
         self._assure_default_state()
+        self._usb = self._tca.get_usb()
 
     def _assure_default_state(self):
         # If the USB-SD-Mux has just been powered on, its default ("DUT") is defined by pull-resistors.
