@@ -22,6 +22,7 @@ import os
 import time
 
 from .i2c_gpio import Pca9536, Tca6408
+from . import sd_regs
 
 
 class UnknownUsbSdMuxRevisionException(Exception):
@@ -133,17 +134,13 @@ class UsbSdMux:
         result = {}
 
         scr = self._usb.read_scr()
-        result["scr"] = {
-            "raw": scr.hex(),
-        }
+        result["scr"] = sd_regs.SCR(scr.hex()).decode()
+
         cid = self._usb.read_cid()
-        result["cid"] = {
-            "raw": cid.hex(),
-        }
+        result["cid"] = sd_regs.CID(cid.hex()).decode()
+
         csd = self._usb.read_csd()
-        result["csd"] = {
-            "raw": csd.hex(),
-        }
+        result["csd"] = sd_regs.decode_csd(csd.hex()).decode()
 
         return result
 
