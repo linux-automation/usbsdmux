@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import abc
 
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -26,6 +25,10 @@ from .i2c_gpio import Pca9536, Tca6408
 
 
 class UnknownUsbSdMuxRevisionException(Exception):
+    pass
+
+
+class NotInHostModeException(Exception):
     pass
 
 
@@ -57,12 +60,11 @@ def autoselect_driver(sg):
         ) from e
 
 
-class UsbSdMux(abc.ABC):
+class UsbSdMux:
     """
     Class to provide an interface for the multiplexer on an usb-sd-mux.
     """
 
-    @abc.abstractmethod
     def __init__(self, sg):
         """
         Create a new UsbSdMux.
@@ -70,16 +72,14 @@ class UsbSdMux(abc.ABC):
         Arguments:
         sg -- /dev/sg* to use
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def get_mode(self):
         """
         Returns currently selected mode as string
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def mode_disconnect(self, wait=True):
         """
         Will disconnect the Micro-SD Card from both host and DUT.
@@ -88,9 +88,8 @@ class UsbSdMux(abc.ABC):
         wait -- Command will block for some time until the voltage-supply of
         the sd-card is known to be close to zero
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def mode_DUT(self, wait=True):
         """
         Switches the MicroSD-Card to the DUT.
@@ -98,9 +97,8 @@ class UsbSdMux(abc.ABC):
         This Command will issue a disconnect first to make sure the SD-card
         has been properly disconnected from both sides and its supply was off.
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def mode_host(self, wait=True):
         """
         Switches the MicroSD-Card to the Host.
@@ -108,28 +106,46 @@ class UsbSdMux(abc.ABC):
         This Command will issue a disconnect first to make sure the SD-card
         has been properly disconnected from both sides and its supply was off.
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def gpio_get(self, gpio):
         """
         Reads the value of gpio and returns "high" or "low"
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def gpio_set_high(self, gpio):
         """
         Sets a gpio high.
         """
-        pass
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def gpio_set_low(self, gpio):
         """
         Sets a gpio low.
         """
-        pass
+        raise NotImplementedError()
+
+    def get_card_info(self):
+        if self.get_mode() != "host":
+            raise NotInHostModeException()
+
+        result = {}
+
+        scr = self._usb.read_scr()
+        result["scr"] = {
+            "raw": scr.hex(),
+        }
+        cid = self._usb.read_cid()
+        result["cid"] = {
+            "raw": cid.hex(),
+        }
+        csd = self._usb.read_csd()
+        result["csd"] = {
+            "raw": csd.hex(),
+        }
+
+        return result
 
 
 class UsbSdMuxClassic(UsbSdMux):
@@ -147,6 +163,7 @@ class UsbSdMuxClassic(UsbSdMux):
 
     def __init__(self, sg):
         self._pca = Pca9536(sg)
+        self._usb = self._pca.get_usb()
 
     def get_mode(self):
         val = self._pca.get_input_values()
@@ -189,15 +206,6 @@ class UsbSdMuxClassic(UsbSdMux):
         # now connect data and power
         self._pca.output_values(self._DAT_enable | self._PWR_enable | self._select_HOST | self._card_inserted)
 
-    def gpio_get(self, gpio):
-        raise NotImplementedError()
-
-    def gpio_set_high(self, gpio):
-        raise NotImplementedError()
-
-    def gpio_set_low(self, gpio):
-        raise NotImplementedError()
-
 
 class UsbSdMuxFast(UsbSdMux):
     _DAT_enable = 0x00
@@ -218,6 +226,7 @@ class UsbSdMuxFast(UsbSdMux):
     def __init__(self, sg):
         self._tca = Tca6408(sg)
         self._assure_default_state()
+        self._usb = self._tca.get_usb()
 
     def _assure_default_state(self):
         # If the USB-SD-Mux has just been powered on, its default ("DUT") is defined by pull-resistors.
