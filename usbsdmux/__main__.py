@@ -72,31 +72,51 @@ def main():
     try:
         ctl = autoselect_driver(args.sg)
     except UnknownUsbSdMuxRevisionException as e:
-        print(e, file=sys.stderr)
-        print(f"Does {args.sg} really point to an USB-SD-Mux?")
+        error_msg = str(e) + "\n" + f"Does {args.sg} really point to an USB-SD-Mux?"
+        if args.json:
+            print(json.dumps({"error-message": error_msg}))
+        else:
+            print(error_msg, file=sys.stderr)
         sys.exit(1)
     mode = args.mode
 
+    error_msg = None
     try:
         if mode == "off":
             ctl.mode_disconnect()
+            if args.json:
+                print(json.dumps({}))
 
         elif mode in ("dut", "client"):
             ctl.mode_DUT()
+            if args.json:
+                print(json.dumps({}))
 
         elif mode == "host":
             ctl.mode_host()
+            if args.json:
+                print(json.dumps({}))
 
         elif mode == "get":
-            print(ctl.get_mode())
+            if args.json:
+                print(json.dumps({"switch-state": ctl.get_mode()}))
+            else:
+                print(ctl.get_mode())
 
         elif mode == "gpio":
             if args.action == "get":
-                print(ctl.gpio_get(args.gpio))
+                if args.json:
+                    print(json.dumps({"gpio-state": {"gpio": args.gpio, "state:": ctl.gpio_get(args.gpio)}}))
+                else:
+                    print(ctl.gpio_get(args.gpio))
             elif args.action in ["0", "low"]:
                 ctl.gpio_set_low(args.gpio)
+                if args.json:
+                    print(json.dumps({}))
             elif args.action in ["1", "high"]:
                 ctl.gpio_set_high(args.gpio)
+                if args.json:
+                    print(json.dumps({}))
 
         elif mode == "info":
             info = ctl.get_card_info()
@@ -108,33 +128,25 @@ def main():
                 print("CSD: {}".format(info["csd"]["raw"]))
 
     except FileNotFoundError as fnfe:
-        print(fnfe, file=sys.stderr)
-        sys.exit(1)
+        error_msg = str(fnfe)
     except PermissionError as perr:
-        print(perr, file=sys.stderr)
-        sys.exit(1)
+        error_msg = str(perr)
     except OSError as ose:
         if ose.errno == errno.ENOTTY:
             # ENOTTY is raised when an error occurred when calling an ioctl
-            print(ose, file=sys.stderr)
-            print(
-                f"Does '{args.sg}' really point to an USB-SD-Mux?",
-                file=sys.stderr,
-            )
-            sys.exit(1)
+            error_msg = ose + "\n" + f"Does '{args.sg}' really point to an USB-SD-Mux?"
         else:
             raise ose
     except NotInHostModeException:
-        print(
-            "Card information is only available in host mode.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
+        error_msg = "Card information is only available in host mode."
     except NotImplementedError:
-        print(
-            "This USB-SD-Mux does not support GPIOs.",
-            file=sys.stderr,
-        )
+        error_msg = "This USB-SD-Mux does not support GPIOs."
+
+    if error_msg:
+        if args.json:
+            print(json.dumps({"error-message": error_msg}))
+        else:
+            print(error_msg, file=sys.stderr)
         sys.exit(1)
 
 
