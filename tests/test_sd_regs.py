@@ -27,3 +27,19 @@ def test_decode(cid):
     res = json.loads(json.dumps(res))
 
     assert res == ref
+
+
+@pytest.mark.parametrize("cid", REFS)
+def test_to_text(cid):
+    ref_name_json = os.path.join(os.path.dirname(__file__), "reference", f"{cid}.json")
+    ref_name_text = os.path.join(os.path.dirname(__file__), "reference", f"{cid}.text")
+    ref_json = json.load(open(ref_name_json))
+    ref_text = open(ref_name_text).read().split("\n")[:-1]
+
+    res = []
+
+    res += decode_csd(ref_json["csd"]["raw"]).get_text_report()
+    res += SCR(ref_json["scr"]["raw"]).get_text_report()
+    res += CID(ref_json["cid"]["raw"]).get_text_report()
+
+    assert res == ref_text

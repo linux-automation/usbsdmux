@@ -1,0 +1,128 @@
+CSD_20 Register Value: 400e0032db79000eebff7f800a400000
+  CSD_STRUCTURE: CSD structure
+    raw: 0b01 == 0x1 == 1
+    enum: 2.0
+  TAAC: data read access-time-1
+    raw: 0b00001110 == 0xe == 14
+    decoded: (1.0, '1ms')
+    value: 1000000.0 ns
+  NSAC: data read access-time-2
+    raw: 0b00000000 == 0x0 == 0
+    value: 0 CLK cycles
+  TRAN_SPEED: max. data transfer rate
+    raw: 0b00110010 == 0x32 == 50
+    decoded: (2.5, '10Mbit/s')
+    value: 25000000.0 bit/s
+  CCC: card command classes
+    raw: 0b110110110111 == 0xdb7 == 3511
+    bits: 0, 1, 2, 4, 5, 7, 8, 10, 11
+  READ_BL_LEN: max. read data block length
+    raw: 0b1001 == 0x9 == 9
+    value: 512 bytes
+  READ_BL_PARTIAL: partial blocks for read allowed
+    raw: 0b0 == 0x0 == 0
+    value: False
+  WRITE_BLK_MISALIGN: write block misalignment allowed
+    raw: 0b0 == 0x0 == 0
+    value: False
+  READ_BLK_MISALIGN: read block misalignment allowed
+    raw: 0b0 == 0x0 == 0
+    value: False
+  DSR_IMP: driver stage register implemented
+    raw: 0b0 == 0x0 == 0
+    value: False
+  C_SIZE: device size
+    raw: 0b0011101110101111111111 == 0xeebff == 977919
+    value: 512711720960 bytes
+  ERASE_BLK_EN: erase single block enable
+    raw: 0b1 == 0x1 == 1
+    value: True
+  SECTOR_SIZE: erase sector size
+    raw: 0b1111111 == 0x7f == 127
+    value: 128 write blocks
+  WP_GRP_SIZE: write protect group size
+    raw: 0b0000000 == 0x0 == 0
+    value: 1 erase sectors
+  WP_GRP_ENABLE: write protect group enable
+    raw: 0b0 == 0x0 == 0
+    value: False
+  R2W_FACTOR: write speed factor
+    raw: 0b010 == 0x2 == 2
+    value: 4 multiples of read access time
+  WRITE_BL_LEN: max. write data block length
+    raw: 0b1001 == 0x9 == 9
+    value: 512 bytes
+  WRITE_BL_PARTIAL: partial blocks for write allowed
+    raw: 0b0 == 0x0 == 0
+    value: False
+  FILE_FORMAT_GRP: file format group
+    raw: 0b0 == 0x0 == 0
+  COPY: copy flag
+    raw: 0b0 == 0x0 == 0
+    value: False
+  PERM_WRITE_PROTECT: permanent write protection
+    raw: 0b0 == 0x0 == 0
+    value: False
+  TMP_WRITE_PROTECT: temporary write protection
+    raw: 0b0 == 0x0 == 0
+    value: False
+  FILE_FORMAT: file format
+    raw: 0b000 == 0x0 == 0
+    enum: Hard disk-like file system with partition table
+  CRC
+    raw: 0b0000000 == 0x0 == 0
+SCR Register Value: 0205848700000000
+  SCR_STRUCTURE: SCR Structure
+    raw: 0b0000 == 0x0 == 0
+    enum: 1.0
+  SD_SPEC: SD Memory Card - Spec. Version
+    raw: 0b0010 == 0x2 == 2
+    enum: 2.00 or 3.0X
+  DATA_STAT_AFTER_ERASE: data status after erase
+    raw: 0b0 == 0x0 == 0
+    value: False
+  SD_SECURITY: CPRM Security Support
+    raw: 0b000 == 0x0 == 0
+    enum: No Security
+  SD_BUS_WIDTHS: DAT Bus widths supported
+    raw: 0b0101 == 0x5 == 5
+    bits: 1 bit, 4 bit
+  SD_SPEC3: Spec. Version 3.00 or higher
+    raw: 0b1 == 0x1 == 1
+  EX_SECURITY: Extended Security Support
+    raw: 0b0000 == 0x0 == 0
+  RESERVED
+    raw: 0b100100001 == 0x121 == 289
+  CMD_SUPPORT: Command Support bits
+    raw: 0b11 == 0x3 == 3
+    bits: Speed Class Control (CMD20), Set Block Count (CMD23)
+  RESERVED_MFG
+    raw: 0b00000000000000000000000000000000 == 0x0 == 0
+CID Register Value: 1b534d474638533530d8466363a16700
+  MID: Manufacturer ID
+    raw: 0b00011011 == 0x1b == 27
+    enum: Samsung
+  OID: OEM/Application ID
+    raw: 0b0101001101001101 == 0x534d == 21325
+    value: SM
+  PNM: Product name
+    raw: 0b0100011101000110001110000101001100110101 == 0x4746385335 == 306120774453
+    value: GF8S5
+  PRV: Product revision
+    raw: 0b00110000 == 0x30 == 48
+    value: 3.0
+  PSN: Product serial number
+    raw: 0b11011000010001100110001101100011 == 0xd8466363 == 3628491619
+    value: 3628491619
+  RESERVED
+    raw: 0b1010 == 0xa == 10
+  MDT_Y: Manufacturing date (year)
+    raw: 0b00010110 == 0x16 == 22
+    value: 2022
+  MDT_M: Manufacturing date (month)
+    raw: 0b0111 == 0x7 == 7
+    value: 8
+  CRC: CRC7 checksum
+    raw: 0b0000000 == 0x0 == 0
+  NU1: not used, always 1
+    raw: 0b0 == 0x0 == 0
