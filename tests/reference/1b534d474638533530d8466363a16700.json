@@ -1,0 +1,450 @@
+{
+  "scr": {
+    "reg": "SCR",
+    "raw": "0205848700000000",
+    "fields": [
+      {
+        "field": "SCR_STRUCTURE",
+        "name": "SCR Structure",
+        "raw": [
+          0,
+          4
+        ],
+        "enum": "1.0"
+      },
+      {
+        "field": "SD_SPEC",
+        "name": "SD Memory Card - Spec. Version",
+        "raw": [
+          2,
+          4
+        ],
+        "enum": "2.00 or 3.0X"
+      },
+      {
+        "field": "DATA_STAT_AFTER_ERASE",
+        "name": "data status after erase",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "SD_SECURITY",
+        "name": "CPRM Security Support",
+        "raw": [
+          0,
+          3
+        ],
+        "enum": "No Security"
+      },
+      {
+        "field": "SD_BUS_WIDTHS",
+        "name": "DAT Bus widths supported",
+        "raw": [
+          5,
+          4
+        ],
+        "bits": [
+          "1 bit",
+          "4 bit"
+        ]
+      },
+      {
+        "field": "SD_SPEC3",
+        "name": "Spec. Version 3.00 or higher",
+        "raw": [
+          1,
+          1
+        ]
+      },
+      {
+        "field": "EX_SECURITY",
+        "name": "Extended Security Support",
+        "raw": [
+          0,
+          4
+        ]
+      },
+      {
+        "field": "RESERVED",
+        "raw": [
+          289,
+          9
+        ]
+      },
+      {
+        "field": "CMD_SUPPORT",
+        "name": "Command Support bits",
+        "raw": [
+          3,
+          2
+        ],
+        "bits": [
+          "Speed Class Control (CMD20)",
+          "Set Block Count (CMD23)"
+        ]
+      },
+      {
+        "field": "RESERVED_MFG",
+        "raw": [
+          0,
+          32
+        ]
+      }
+    ],
+    "computed": {}
+  },
+  "cid": {
+    "reg": "CID",
+    "raw": "1b534d474638533530d8466363a16700",
+    "fields": [
+      {
+        "field": "MID",
+        "name": "Manufacturer ID",
+        "raw": [
+          27,
+          8
+        ],
+        "enum": "Samsung"
+      },
+      {
+        "field": "OID",
+        "name": "OEM/Application ID",
+        "raw": [
+          21325,
+          16
+        ],
+        "value": "SM"
+      },
+      {
+        "field": "PNM",
+        "name": "Product name",
+        "raw": [
+          306120774453,
+          40
+        ],
+        "value": "GF8S5"
+      },
+      {
+        "field": "PRV",
+        "name": "Product revision",
+        "raw": [
+          48,
+          8
+        ],
+        "value": "3.0"
+      },
+      {
+        "field": "PSN",
+        "name": "Product serial number",
+        "raw": [
+          3628491619,
+          32
+        ],
+        "value": "3628491619"
+      },
+      {
+        "field": "RESERVED",
+        "raw": [
+          10,
+          4
+        ]
+      },
+      {
+        "field": "MDT_Y",
+        "name": "Manufacturing date (year)",
+        "raw": [
+          22,
+          8
+        ],
+        "value": "2022"
+      },
+      {
+        "field": "MDT_M",
+        "name": "Manufacturing date (month)",
+        "raw": [
+          7,
+          4
+        ],
+        "value": "8"
+      },
+      {
+        "field": "CRC",
+        "name": "CRC7 checksum",
+        "raw": [
+          0,
+          7
+        ]
+      },
+      {
+        "field": "NU1",
+        "name": "not used, always 1",
+        "raw": [
+          0,
+          1
+        ]
+      }
+    ],
+    "computed": {}
+  },
+  "csd": {
+    "reg": "CSD_20",
+    "raw": "400e0032db79000eebff7f800a400000",
+    "fields": [
+      {
+        "field": "CSD_STRUCTURE",
+        "name": "CSD structure",
+        "raw": [
+          1,
+          2
+        ],
+        "enum": "2.0"
+      },
+      {
+        "field": "TAAC",
+        "name": "data read access-time-1",
+        "raw": [
+          14,
+          8
+        ],
+        "decoded": [
+          1.0,
+          "1ms"
+        ],
+        "value": 1000000.0,
+        "unit": "ns"
+      },
+      {
+        "field": "NSAC",
+        "name": "data read access-time-2",
+        "raw": [
+          0,
+          8
+        ],
+        "value": "0",
+        "unit": "CLK cycles"
+      },
+      {
+        "field": "TRAN_SPEED",
+        "name": "max. data transfer rate",
+        "raw": [
+          50,
+          8
+        ],
+        "decoded": [
+          2.5,
+          "10Mbit/s"
+        ],
+        "value": 25000000.0,
+        "unit": "bit/s"
+      },
+      {
+        "field": "CCC",
+        "name": "card command classes",
+        "raw": [
+          3511,
+          12
+        ],
+        "bits": [
+          "0",
+          "1",
+          "2",
+          "4",
+          "5",
+          "7",
+          "8",
+          "10",
+          "11"
+        ]
+      },
+      {
+        "field": "READ_BL_LEN",
+        "name": "max. read data block length",
+        "raw": [
+          9,
+          4
+        ],
+        "value": "512",
+        "unit": "bytes"
+      },
+      {
+        "field": "READ_BL_PARTIAL",
+        "name": "partial blocks for read allowed",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "WRITE_BLK_MISALIGN",
+        "name": "write block misalignment allowed",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "READ_BLK_MISALIGN",
+        "name": "read block misalignment allowed",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "DSR_IMP",
+        "name": "driver stage register implemented",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "C_SIZE",
+        "name": "device size",
+        "raw": [
+          977919,
+          22
+        ],
+        "value": "512711720960",
+        "unit": "bytes"
+      },
+      {
+        "field": "ERASE_BLK_EN",
+        "name": "erase single block enable",
+        "raw": [
+          1,
+          1
+        ],
+        "value": "True"
+      },
+      {
+        "field": "SECTOR_SIZE",
+        "name": "erase sector size",
+        "raw": [
+          127,
+          7
+        ],
+        "value": "128",
+        "unit": "write blocks"
+      },
+      {
+        "field": "WP_GRP_SIZE",
+        "name": "write protect group size",
+        "raw": [
+          0,
+          7
+        ],
+        "value": "1",
+        "unit": "erase sectors"
+      },
+      {
+        "field": "WP_GRP_ENABLE",
+        "name": "write protect group enable",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "R2W_FACTOR",
+        "name": "write speed factor",
+        "raw": [
+          2,
+          3
+        ],
+        "value": "4",
+        "unit": "multiples of read access time"
+      },
+      {
+        "field": "WRITE_BL_LEN",
+        "name": "max. write data block length",
+        "raw": [
+          9,
+          4
+        ],
+        "value": "512",
+        "unit": "bytes"
+      },
+      {
+        "field": "WRITE_BL_PARTIAL",
+        "name": "partial blocks for write allowed",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "FILE_FORMAT_GRP",
+        "name": "file format group",
+        "raw": [
+          0,
+          1
+        ]
+      },
+      {
+        "field": "COPY",
+        "name": "copy flag",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "PERM_WRITE_PROTECT",
+        "name": "permanent write protection",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "TMP_WRITE_PROTECT",
+        "name": "temporary write protection",
+        "raw": [
+          0,
+          1
+        ],
+        "value": "False"
+      },
+      {
+        "field": "FILE_FORMAT",
+        "name": "file format",
+        "raw": [
+          0,
+          3
+        ],
+        "enum": "Hard disk-like file system with partition table"
+      },
+      {
+        "field": "CRC",
+        "raw": [
+          0,
+          7
+        ]
+      }
+    ],
+    "computed": {
+      "sector_size_bytes": {
+        "value": 65536,
+        "unit": "bytes",
+        "name": "sector size"
+      },
+      "wp_grp_size_bytes": {
+        "value": 65536,
+        "unit": "bytes",
+        "name": "write protect group size"
+      }
+    }
+  }
+}
