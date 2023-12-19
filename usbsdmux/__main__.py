@@ -72,7 +72,7 @@ def main():
     try:
         ctl = autoselect_driver(args.sg)
     except UnknownUsbSdMuxRevisionException as e:
-        error_msg = str(e) + "\n" + f"Does {args.sg} really point to an USB-SD-Mux?"
+        error_msg = str(e) + "\n" + f"Does {args.sg} really point to a USB-SD-Mux?"
         if args.json:
             print(json.dumps({"error-message": error_msg}))
         else:
@@ -134,7 +134,7 @@ def main():
     except OSError as ose:
         if ose.errno == errno.ENOTTY:
             # ENOTTY is raised when an error occurred when calling an ioctl
-            error_msg = ose + "\n" + f"Does '{args.sg}' really point to an USB-SD-Mux?"
+            error_msg = ose + "\n" + f"Does '{args.sg}' really point to a USB-SD-Mux?"
         else:
             raise ose
     except NotInHostModeException:
