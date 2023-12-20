@@ -24,6 +24,7 @@ import sys
 import json
 
 from .usbsdmux import autoselect_driver, UnknownUsbSdMuxRevisionException, NotInHostModeException
+from .sd_regs import decoded_to_text
 
 
 def main():
@@ -121,11 +122,11 @@ def main():
         elif mode == "info":
             info = ctl.get_card_info()
             if args.json:
-                print(json.dumps(info, indent=4))
+                print(json.dumps(info, indent=2))
             else:
-                print("SCR: {}".format(info["scr"]["raw"]))
-                print("CID: {}".format(info["cid"]["raw"]))
-                print("CSD: {}".format(info["csd"]["raw"]))
+                print("\n".join(decoded_to_text(info["scr"])))
+                print("\n".join(decoded_to_text(info["cid"])))
+                print("\n".join(decoded_to_text(info["csd"])))
 
     except FileNotFoundError as fnfe:
         error_msg = str(fnfe)
