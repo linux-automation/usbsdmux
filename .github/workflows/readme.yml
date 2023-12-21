@@ -1,0 +1,17 @@
+name: readme
+
+on: [push, pull_request]
+
+jobs:
+  readme-help:
+    name: usbsdmux -h is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies and usbsdmux tool
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install .
+      - name: Run the check
+        run: |
+          python3 .github/workflows/readme.py
