@@ -66,20 +66,23 @@ command invocations:
 .. code-block:: text
 
    $ usbsdmux -h
-   usage: usbsdmux [-h] SG {get,dut,client,host,off}
+   usage: usbsdmux [-h] [--json] SG {get,dut,client,host,off,gpio,info} ...
 
    positional arguments:
      SG                    /dev/sg* to use
-     {get,dut,client,host,off}
-			   Action:
-			   get - return selected mode
-			   dut - set to dut mode
-			   client - set to dut mode (alias for dut)
-			   host - set to host mode
-			   off - set to off mode
+     {get,dut,client,host,off,gpio,info}
+                           Supply one of the following commands to interact with the device
+       get                 Read the current state of the USB-SD-Mux
+       dut                 Switch to the DUT
+       client              Switch to the DUT
+       host                Switch to the host
+       off                 Disconnect from host and DUT
+       gpio                Manipulate a GPIO (open drain output only)
+       info                Show information about the SD card
 
-   optional arguments:
+   options:
      -h, --help            show this help message and exit
+     --json                Format output as json. Useful for scripting.
 
 Using as root
 -------------
