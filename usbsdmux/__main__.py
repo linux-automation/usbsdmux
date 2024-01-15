@@ -25,12 +25,16 @@ import json
 
 from .usbsdmux import autoselect_driver, UnknownUsbSdMuxRevisionException, NotInHostModeException
 from .sd_regs import decoded_to_text
+from .mqtthelper import Config, publish_info
 
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
+
+    parser.add_argument("--config", help="Set config file location", default=None)
+
     format_parser = parser.add_mutually_exclusive_group()
     format_parser.add_argument("--json", help="Format output as json. Useful for scripting.", action="store_true")
 
@@ -70,6 +74,8 @@ def main():
             file=sys.stderr,
         )
 
+    config = Config(args.config)
+
     try:
         ctl = autoselect_driver(args.sg)
     except UnknownUsbSdMuxRevisionException as e:
@@ -89,6 +95,8 @@ def main():
                 print(json.dumps({}))
 
         elif mode in ("dut", "client"):
+            publish_info(ctl, config)
+
             ctl.mode_DUT()
             if args.json:
                 print(json.dumps({}))
@@ -97,6 +105,8 @@ def main():
             ctl.mode_host()
             if args.json:
                 print(json.dumps({}))
+
+            publish_info(ctl, config)
 
         elif mode == "get":
             if args.json:
