@@ -95,7 +95,7 @@ def main():
                 print(json.dumps({}))
 
         elif mode in ("dut", "client"):
-            publish_info(ctl, config)
+            publish_info(ctl, config, args.sg, "client")
 
             ctl.mode_DUT()
             if args.json:
@@ -106,7 +106,7 @@ def main():
             if args.json:
                 print(json.dumps({}))
 
-            publish_info(ctl, config)
+            publish_info(ctl, config, args.sg, "host")
 
         elif mode == "get":
             if args.json:
