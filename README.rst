@@ -31,11 +31,10 @@ Under the hood this tool provides interfaces to access the following features of
 Packages
 --------
 
-.. raw:: html
-
-   <a href="https://repology.org/project/usbsdmux/versions">
-      <img src="https://repology.org/badge/vertical-allrepos/usbsdmux.svg?exclude_unsupported=1" alt="Packaging status" align="right">
-   </a>
+.. image:: https://repology.org/badge/vertical-allrepos/usbsdmux.svg
+   :target: https://repology.org/project/usbsdmux/versions
+   :alt: Packaging status
+   :align: right
 
 This tool is `packaged <https://packages.debian.org/search?keywords=usbsdmux&searchon=names&exact=1>`_ in Debian 12
 (aka *bookworm*) and later.
