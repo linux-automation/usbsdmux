@@ -44,5 +44,5 @@ $(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.qa.txt
 qa: $(PYTHON_TESTING_ENV)/.created
 	. $(PYTHON_TESTING_ENV)/bin/activate && \
 	black --check --diff . && \
-	flake8
-
+	flake8 && \
+	python3 -m pytest -vv
