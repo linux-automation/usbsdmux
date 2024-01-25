@@ -203,4 +203,4 @@ Then you just add a line (using ``git commit -s``) saying:
 
   Signed-off-by: Random J Developer <random@developer.example.org>
 
-using your real name (sorry, no pseudonyms or anonymous contributions).
+using a known identity (sorry, no anonymous contributions).
