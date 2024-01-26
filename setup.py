@@ -5,7 +5,7 @@ import fastentrypoints
 
 setup(
     name="usbsdmux",
-    version="24.01",
+    version="24.01.1",
     author="Chris Fiege",
     author_email="python@pengutronix.de",
     license="LGPL-2.1-or-later",
