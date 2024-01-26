@@ -65,7 +65,8 @@ command invocations:
 .. code-block:: text
 
    $ usbsdmux -h
-   usage: usbsdmux [-h] [--json] SG {get,dut,client,host,off,gpio,info} ...
+   usage: usbsdmux [-h] [--config CONFIG] [--json]
+                   SG {get,dut,client,host,off,gpio,info} ...
 
    positional arguments:
      SG                    /dev/sg* to use
@@ -81,6 +82,7 @@ command invocations:
 
    options:
      -h, --help            show this help message and exit
+     --config CONFIG       Set config file location
      --json                Format output as json. Useful for scripting.
 
 Using as root
@@ -160,6 +162,14 @@ Troubleshooting
 .. |pypi| image:: https://img.shields.io/pypi/v/usbsdmux.svg
     :alt: pypi.org
     :target: https://pypi.org/project/usbsdmux
+
+MQTT Statistics
+---------------
+
+This tool can be configured to send certain statistics to a MQTT broker.
+To enable this function create a config file at ``/etc/usbsdmux.config`` or use ``--config`` specify a file location.
+
+See example config file `usbsdmux.config <contrib/usbsdmux.config>`_.
 
 Contributing
 ------------
