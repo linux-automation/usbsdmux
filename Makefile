@@ -7,20 +7,22 @@ PYTHON_QA_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
 # packaging environment #######################################################
 .PHONY: packaging-env build _release
 
-$(PYTHON_PACKAGING_VENV)/.created: REQUIREMENTS.packaging.txt
+$(PYTHON_PACKAGING_VENV)/.created:
 	rm -rf $(PYTHON_PACKAGING_VENV) && \
 	$(PYTHON) -m venv $(PYTHON_PACKAGING_VENV) && \
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	$(PYTHON) -m pip install --upgrade pip && \
-	$(PYTHON) -m pip install -r REQUIREMENTS.packaging.txt
+	$(PYTHON) -m pip install build twine
 	date > $(PYTHON_PACKAGING_VENV)/.created
+
+.PHONY: packaging-env build _release
 
 packaging-env: $(PYTHON_PACKAGING_VENV)/.created
 
 build: packaging-env
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	rm -rf dist *.egg-info && \
-	./setup.py sdist
+	$(PYTHON) -m build
 
 _release: build
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
@@ -37,12 +39,12 @@ envs: packaging-env qa-env
 # testing #####################################################################
 .PHONY: qa qa-env qa-codespell qa-pytest qa-ruff
 
-$(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
+$(PYTHON_QA_ENV)/.created:
 	rm -rf $(PYTHON_QA_ENV) && \
 	$(PYTHON) -m venv $(PYTHON_QA_ENV) && \
 	. $(PYTHON_QA_ENV)/bin/activate && \
 	$(PYTHON) -m pip install pip --upgrade && \
-	$(PYTHON) -m pip install -r ./REQUIREMENTS.qa.txt && \
+	$(PYTHON) -m pip install codespell ruff pytest pytest-mock  && \
 	date > $(PYTHON_QA_ENV)/.created
 
 qa-env: $(PYTHON_QA_ENV)/.created
