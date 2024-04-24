@@ -10,6 +10,13 @@ jobs:
       - uses: actions/checkout@v4
       - run: make qa-black
 
+  codespell:
+    name: Codespell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make qa-codespell
+
   flake8:
     name: Python flake8
     runs-on: ubuntu-latest
