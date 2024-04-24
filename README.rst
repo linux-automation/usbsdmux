@@ -217,9 +217,20 @@ MQTT Statistics
 ---------------
 
 This tool can be configured to send certain statistics to a MQTT broker.
-To enable this function create a config file at ``/etc/usbsdmux.config`` or use ``--config`` specify a file location.
+To use this feature the `usbsdmux` util has to be installed with some
+additional dependencies:
 
-See example config file `usbsdmux.config <contrib/usbsdmux.config>`_.
+.. code-block:: bash
+
+   $ python3 -m venv venv
+   $ source venv/bin/activate
+   $ python3 -m pip install "usbsdmux[mqtt]"
+
+To enable this feature create a config file at ``/etc/usbsdmux.config``
+or use ``--config`` to specify a file location.
+
+See the example config file `usbsdmux.config <contrib/usbsdmux.config>`_
+for available configuration options.
 
 
 Troubleshooting
