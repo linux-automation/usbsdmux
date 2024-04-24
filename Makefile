@@ -12,10 +12,10 @@ $(PYTHON_PACKAGING_VENV)/.created:
 	$(PYTHON) -m venv $(PYTHON_PACKAGING_VENV) && \
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	$(PYTHON) -m pip install --upgrade pip && \
-	$(PYTHON) -m pip install build twine
+	$(PYTHON) -m pip install build
 	date > $(PYTHON_PACKAGING_VENV)/.created
 
-.PHONY: packaging-env build _release
+.PHONY: packaging-env build
 
 packaging-env: $(PYTHON_PACKAGING_VENV)/.created
 
@@ -23,10 +23,6 @@ build: packaging-env
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	rm -rf dist *.egg-info && \
 	$(PYTHON) -m build
-
-_release: build
-	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
-	$(PYTHON) -m twine upload dist/*
 
 # helper ######################################################################
 .PHONY: clean envs
