@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # include tags and full history for setuptools_scm
+          fetch-depth: 0
       - run: make build
       - uses: actions/upload-artifact@v4
         with:
