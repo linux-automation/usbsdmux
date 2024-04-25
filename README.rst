@@ -7,26 +7,25 @@ Welcome to usbsdmux
 Purpose
 -------
 This software is used to control a special piece of hardware called the
-`USB-SD-Mux <https://www.linux-automation.com/en/products/usb-sd-mux.html>`_
-from the command line or python.
+`USB-SD-Mux <https://www.linux-automation.com/en/products/usb-sd-mux.html>`_.
+It can be used via the command line or as a Python library.
 
-The USB-SD-Mux is build around a `Microchip USB2642 <http://www.microchip.com/wwwproducts/en/USB2642>`_ card reader. Thus most of this software deals with interfacing this device using Linux ioctls().
+The USB-SD-Mux is built around a `Microchip USB2642 <http://www.microchip.com/wwwproducts/en/USB2642>`_ card reader. Thus most of this software deals with interfacing this device using Linux ioctls().
 
 This software is aimed to be used with `Labgrid <https://github.com/labgrid-project/labgrid>`_. But it can also be used stand-alone or in your own applications.
 
 High-Level Functions
 --------------------
-The ``usbsdmux`` package provides the following functions:
+The ``usbsdmux`` package provides the the following features:
 
-* Multiplexing the SD-Card to either DUT, Host or disconnect using the ``usbsdmux`` command
-* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device using the ``usbsdmux-configure`` command
-
+* Muxing the SD-Card to either the DUT, Host or disconnecting it altogether via the ``usbsdmux`` command.
+* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device via the ``usbsdmux-configure`` command.
 
 Low-Level Functions
 -------------------
 Under the hood this tool provides interfaces to access the following features of the Microchip USB2642:
 
-* Accessing the auxiliary I2C bus with write and write-read transactions with up to 512 bytes of payload using a simple python interface.
+* Accessing the auxiliary I2C bus with write and write-read transactions with up to 512 bytes of payload using a simple Python interface.
 * Writing an I2C Configuration-EEPROM on the configuration I2C.
   This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
 
@@ -176,7 +175,7 @@ See example config file `usbsdmux.config <contrib/usbsdmux.config>`_.
 Contributing
 ------------
 
-Thank you for thinking about contributing to this project!
+Thank you for considering a contribution to this project!
 Changes should be submitted via a
 `Github pull request <https://github.com/linux-automation/usbsdmux/pulls>`_.
 
