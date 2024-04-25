@@ -14,10 +14,10 @@ This software is aimed to be used with `Labgrid <https://github.com/labgrid-proj
 
 High-Level Functions
 --------------------
-usbsdmux provides the following functions:
+The ``usbsdmux`` package provides the following functions:
 
-* Multiplexing the SD-Card to either DUT, Host or disconnect with ``usbsdmux``
-* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device: ``usbsdmux-configure``
+* Multiplexing the SD-Card to either DUT, Host or disconnect using the ``usbsdmux`` command
+* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device using the ``usbsdmux-configure`` command
 
 
 Low-Level Functions
@@ -46,20 +46,20 @@ Packages also exist for `some other distributions <https://repology.org/project/
 Quickstart
 ----------
 
-Create and activate a Python virtual environment for usbsdmux:
+Create and activate a Python virtual environment for the ``usbsdmux`` package:
 
 .. code-block:: bash
 
    $ python3 -m venv venv
    $ source venv/bin/activate
 
-Install usbsdmux into the virtual environment:
+Install the ``usbsdmux`` package into the virtual environment:
 
 .. code-block:: bash
 
    $ python3 -m pip install usbsdmux
 
-Now you can run ``usbsdmux -h`` to get a list of possible
+Now you can run ``usbsdmux`` command with the ``-h`` flag to get a list of possible
 command invocations:
 
 .. code-block:: text
@@ -88,7 +88,7 @@ command invocations:
 Using as root
 -------------
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
-can just use ``usbsdmux`` as root.
+can just use the ``usbsdmux`` command as root.
 
 If you have installed this tool inside a virtual environment you can just call the
 shell-wrapper along with the appropriate `/dev/sg*` device path:
