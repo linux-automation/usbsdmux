@@ -2,7 +2,7 @@ PYTHON=python3
 
 PYTHON_ENV_ROOT=envs
 PYTHON_PACKAGING_VENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging-env
-PYTHON_TESTING_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
+PYTHON_QA_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
 
 .PHONY: clean
 
@@ -33,16 +33,16 @@ clean:
 envs: env packaging-env
 
 # testing #####################################################################
-$(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.qa.txt
-	rm -rf $(PYTHON_TESTING_ENV) && \
-	$(PYTHON) -m venv $(PYTHON_TESTING_ENV) && \
-	. $(PYTHON_TESTING_ENV)/bin/activate && \
+$(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
+	rm -rf $(PYTHON_QA_ENV) && \
+	$(PYTHON) -m venv $(PYTHON_QA_ENV) && \
+	. $(PYTHON_QA_ENV)/bin/activate && \
 	$(PYTHON) -m pip install pip --upgrade && \
 	$(PYTHON) -m pip install -r ./REQUIREMENTS.qa.txt && \
-	date > $(PYTHON_TESTING_ENV)/.created
+	date > $(PYTHON_QA_ENV)/.created
 
-qa: $(PYTHON_TESTING_ENV)/.created
-	. $(PYTHON_TESTING_ENV)/bin/activate && \
+qa: $(PYTHON_QA_ENV)/.created
+	. $(PYTHON_QA_ENV)/bin/activate && \
 	$(PYTHON) -m black --check --diff . && \
 	$(PYTHON) -m flake8 && \
 	$(PYTHON) -m pytest -vv
