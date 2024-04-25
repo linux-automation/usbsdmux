@@ -4,9 +4,9 @@ PYTHON_ENV_ROOT=envs
 PYTHON_PACKAGING_VENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging-env
 PYTHON_QA_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
 
-.PHONY: clean
-
 # packaging environment #######################################################
+.PHONY: packaging-env sdist _release
+
 $(PYTHON_PACKAGING_VENV)/.created: REQUIREMENTS.packaging.txt
 	rm -rf $(PYTHON_PACKAGING_VENV) && \
 	$(PYTHON) -m venv $(PYTHON_PACKAGING_VENV) && \
@@ -27,12 +27,16 @@ _release: sdist
 	$(PYTHON) -m twine upload dist/*
 
 # helper ######################################################################
+.PHONY: clean envs
+
 clean:
 	rm -rf $(PYTHON_ENV_ROOT)
 
 envs: env packaging-env
 
 # testing #####################################################################
+.PHONY: qa
+
 $(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
 	rm -rf $(PYTHON_QA_ENV) && \
 	$(PYTHON) -m venv $(PYTHON_QA_ENV) && \
