@@ -5,7 +5,7 @@ PYTHON_PACKAGING_VENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging-env
 PYTHON_QA_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
 
 # packaging environment #######################################################
-.PHONY: packaging-env sdist _release
+.PHONY: packaging-env build _release
 
 $(PYTHON_PACKAGING_VENV)/.created: REQUIREMENTS.packaging.txt
 	rm -rf $(PYTHON_PACKAGING_VENV) && \
@@ -17,12 +17,12 @@ $(PYTHON_PACKAGING_VENV)/.created: REQUIREMENTS.packaging.txt
 
 packaging-env: $(PYTHON_PACKAGING_VENV)/.created
 
-sdist: packaging-env
+build: packaging-env
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	rm -rf dist *.egg-info && \
 	./setup.py sdist
 
-_release: sdist
+_release: build
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	$(PYTHON) -m twine upload dist/*
 
