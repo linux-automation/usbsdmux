@@ -11,8 +11,8 @@ $(PYTHON_PACKAGING_VENV)/.created: REQUIREMENTS.packaging.txt
 	rm -rf $(PYTHON_PACKAGING_VENV) && \
 	$(PYTHON) -m venv $(PYTHON_PACKAGING_VENV) && \
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
-	pip install --upgrade pip && \
-	pip install -r REQUIREMENTS.packaging.txt
+	$(PYTHON) -m pip install --upgrade pip && \
+	$(PYTHON) -m pip install -r REQUIREMENTS.packaging.txt
 	date > $(PYTHON_PACKAGING_VENV)/.created
 
 packaging-env: $(PYTHON_PACKAGING_VENV)/.created
@@ -24,7 +24,7 @@ sdist: packaging-env
 
 _release: sdist
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
-	twine upload dist/*
+	$(PYTHON) -m twine upload dist/*
 
 # helper ######################################################################
 clean:
@@ -37,12 +37,12 @@ $(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.qa.txt
 	rm -rf $(PYTHON_TESTING_ENV) && \
 	$(PYTHON) -m venv $(PYTHON_TESTING_ENV) && \
 	. $(PYTHON_TESTING_ENV)/bin/activate && \
-	pip install pip --upgrade && \
-	pip install -r ./REQUIREMENTS.qa.txt && \
+	$(PYTHON) -m pip install pip --upgrade && \
+	$(PYTHON) -m pip install -r ./REQUIREMENTS.qa.txt && \
 	date > $(PYTHON_TESTING_ENV)/.created
 
 qa: $(PYTHON_TESTING_ENV)/.created
 	. $(PYTHON_TESTING_ENV)/bin/activate && \
-	black --check --diff . && \
-	flake8 && \
-	python3 -m pytest -vv
+	$(PYTHON) -m black --check --diff . && \
+	$(PYTHON) -m flake8 && \
+	$(PYTHON) -m pytest -vv
