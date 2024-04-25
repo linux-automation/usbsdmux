@@ -1,8 +1,18 @@
-name: flake8 
+name: Check
 
 on: [push, pull_request]
 
 jobs:
+  python-black:
+    name: Python Black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Python Black
+        uses: cytopia/docker-black@0.8
+        with:
+          path: '.'
+
   flake8_py3:
     runs-on: ubuntu-latest
     steps:
@@ -23,3 +33,16 @@ jobs:
           checkName: 'flake8_py3'   # NOTE: this needs to be the same as the job name
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python-pytest:
+    name: Python pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade pytest pytest-mock
+      - name: Run pytest
+        run: |
+          python -m pytest -vv
