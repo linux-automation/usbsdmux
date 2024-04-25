@@ -6,7 +6,9 @@ Welcome to usbsdmux
 
 Purpose
 -------
-This software is used to control a special piece of hardware called USB-SD-Mux from the command line or python.
+This software is used to control a special piece of hardware called the
+`USB-SD-Mux <https://www.linux-automation.com/en/products/usb-sd-mux.html>`_
+from the command line or python.
 
 The USB-SD-Mux is build around a `Microchip USB2642 <http://www.microchip.com/wwwproducts/en/USB2642>`_ card reader. Thus most of this software deals with interfacing this device using Linux ioctls().
 
