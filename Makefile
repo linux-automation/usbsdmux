@@ -35,7 +35,7 @@ clean:
 envs: packaging-env qa-env
 
 # testing #####################################################################
-.PHONY: qa qa-env qa-black qa-flake8 qa-pytest
+.PHONY: qa qa-env qa-black qa-codespell qa-flake8 qa-pytest
 
 $(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
 	rm -rf $(PYTHON_QA_ENV) && \
@@ -47,11 +47,19 @@ $(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
 
 qa-env: $(PYTHON_QA_ENV)/.created
 
-qa: qa-black qa-flake8 qa-pytest
+qa: qa-black qa-codespell qa-flake8 qa-pytest
 
 qa-black: qa-env
 	. $(PYTHON_QA_ENV)/bin/activate && \
 	$(PYTHON) -m black --check --diff .
+
+qa-codespell: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	codespell
+
+qa-codespell-fix: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	codespell -w
 
 qa-flake8: qa-env
 	. $(PYTHON_QA_ENV)/bin/activate && \
