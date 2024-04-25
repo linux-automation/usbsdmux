@@ -2,7 +2,7 @@
 
 from setuptools import setup
 
-import fastentrypoints
+import fastentrypoints  # noqa: F401
 
 setup(
     name="usbsdmux",
