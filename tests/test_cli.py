@@ -26,14 +26,16 @@ def test_help_in_readme(capsys, mocker):
 
     readme_path = os.path.join(os.path.dirname(__file__), "../", "README.rst")
     readme_lines = None
-    for line in open(readme_path).readlines():
-        line = line.rstrip()
-        if line == "   $ usbsdmux -h":
-            readme_lines = []
-        elif readme_lines is not None:
-            if line and not line.startswith("   "):
-                break
-            readme_lines.append(line)
+
+    with open(readme_path) as readme:
+        for line in readme.readlines():
+            line = line.rstrip()
+            if line == "   $ usbsdmux -h":
+                readme_lines = []
+            elif readme_lines is not None:
+                if line and not line.startswith("   "):
+                    break
+                readme_lines.append(line)
 
     assert readme_lines is not None, "Bash command not found. Did you include '   $ usbsdmux -h'?"
     assert readme_lines, "No output lines found. Did you indent the output correctly?"

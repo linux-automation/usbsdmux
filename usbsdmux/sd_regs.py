@@ -137,10 +137,7 @@ class CSD_Common(RegisterDecoder):
         scale = TIME_SCALE_ENUM[bitslice(v[0], 2, 0)]
         value = self.TIME_VALUE_ENUM[bitslice(v[0], 6, 3)]
 
-        if isinstance(value, float):
-            scaled_value = value * scale
-        else:
-            scaled_value = None
+        scaled_value = value * scale if isinstance(value, float) else None
 
         return {
             "decoded": (value, unit),
@@ -156,10 +153,10 @@ class CSD_Common(RegisterDecoder):
         scale = RATE_SCALE_ENUM[bitslice(v[0], 2, 0)]
         value = self.TIME_VALUE_ENUM[bitslice(v[0], 6, 3)]
 
+        scaled_value = None
+
         if isinstance(value, float) and isinstance(scale, int):
             scaled_value = value * scale
-        else:
-            scaled_value = None
 
         return {
             "decoded": (value, unit),
@@ -517,7 +514,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    data = json.loads(open(args.input).read())
+    with open(args.input) as fd:
+        data = json.loads(fd.read())
 
     if args.json:
         res = {}

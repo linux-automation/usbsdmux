@@ -16,7 +16,9 @@ REFS = [
 @pytest.mark.parametrize("cid", REFS)
 def test_decode(cid):
     ref_name = os.path.join(os.path.dirname(__file__), "reference", f"{cid}.json")
-    ref = json.load(open(ref_name))
+
+    with open(ref_name) as ref_file:
+        ref = json.load(ref_file)
 
     res = {}
     res["scr"] = SCR(ref["scr"]["raw"]).decode()
@@ -33,8 +35,12 @@ def test_decode(cid):
 def test_to_text(cid):
     ref_name_json = os.path.join(os.path.dirname(__file__), "reference", f"{cid}.json")
     ref_name_text = os.path.join(os.path.dirname(__file__), "reference", f"{cid}.text")
-    ref_json = json.load(open(ref_name_json))
-    ref_text = open(ref_name_text).read().split("\n")[:-1]
+
+    with open(ref_name_json) as ref_file_json:
+        ref_json = json.load(ref_file_json)
+
+    with open(ref_name_text) as ref_file_text:
+        ref_text = ref_file_text.read().split("\n")[:-1]
 
     res = []
 
