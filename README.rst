@@ -148,6 +148,9 @@ shell-wrapper along with the appropriate `/dev/sg*` device path:
    $ sudo /path/to/venv/bin/usbsdmux /dev/sg0 dut
    $ sudo /path/to/venv/bin/usbsdmux /dev/sg0 host
 
+If you encounter any issues using the USB-SD-Mux at this point consider consulting
+the `Troubleshooting`_ section later in this README.
+
 
 Using as normal user / Reliable names
 -------------------------------------
