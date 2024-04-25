@@ -32,10 +32,10 @@ _release: sdist
 clean:
 	rm -rf $(PYTHON_ENV_ROOT)
 
-envs: env packaging-env
+envs: packaging-env qa-env
 
 # testing #####################################################################
-.PHONY: qa
+.PHONY: qa qa-env qa-black qa-flake8 qa-pytest
 
 $(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
 	rm -rf $(PYTHON_QA_ENV) && \
@@ -45,8 +45,18 @@ $(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
 	$(PYTHON) -m pip install -r ./REQUIREMENTS.qa.txt && \
 	date > $(PYTHON_QA_ENV)/.created
 
-qa: $(PYTHON_QA_ENV)/.created
+qa-env: $(PYTHON_QA_ENV)/.created
+
+qa: qa-black qa-flake8 qa-pytest
+
+qa-black: qa-env
 	. $(PYTHON_QA_ENV)/bin/activate && \
-	$(PYTHON) -m black --check --diff . && \
-	$(PYTHON) -m flake8 && \
+	$(PYTHON) -m black --check --diff .
+
+qa-flake8: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	$(PYTHON) -m flake8
+
+qa-pytest: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
 	$(PYTHON) -m pytest -vv
