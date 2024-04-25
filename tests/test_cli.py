@@ -38,7 +38,9 @@ def test_help_in_readme(capsys, mocker):
     assert readme_lines is not None, "Bash command not found. Did you include '   $ usbsdmux -h'?"
     assert readme_lines, "No output lines found. Did you indent the output correctly?"
 
-    del readme_lines[-1]  # remove trailing empty line
+    # remove trailing empty lines
+    while readme_lines and not readme_lines[-1]:
+        readme_lines.pop()
 
     output_lines = [f"   {line}".rstrip() for line in captured.out.splitlines()]
 
