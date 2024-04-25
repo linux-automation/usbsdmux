@@ -46,18 +46,18 @@ Packages also exist for `some other distributions <https://repology.org/project/
 Quickstart
 ----------
 
-Create and activate a virtualenv for usbsdmux:
+Create and activate a Python virtual environment for usbsdmux:
 
 .. code-block:: bash
 
-   $ virtualenv -p python3 venv
+   $ python3 -m venv venv
    $ source venv/bin/activate
 
-Install usbsdmux into the virtualenv:
+Install usbsdmux into the virtual environment:
 
 .. code-block:: bash
 
-   $ pip install usbsdmux
+   $ python3 -m pip install usbsdmux
 
 Now you can run ``usbsdmux -h`` to get a list of possible
 command invocations:
@@ -90,13 +90,13 @@ Using as root
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
 can just use ``usbsdmux`` as root.
 
-If you have installed this tool inside a virtualenv you can just call the
+If you have installed this tool inside a virtual environment you can just call the
 shell-wrapper along with the appropriate `/dev/sg*` device path:
 
 .. code-block:: bash
 
-   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 dut
-   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 host
+   sudo /path/to/venv/bin/usbsdmux /dev/sg0 dut
+   sudo /path/to/venv/bin/usbsdmux /dev/sg0 host
 
 Using as normal user / Reliable names
 -------------------------------------
