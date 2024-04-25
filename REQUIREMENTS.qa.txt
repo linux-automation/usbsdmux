@@ -1,7 +1,4 @@
-black
 codespell
-flake8
-flake8-pyproject
-flake8-bugbear
 pytest
 pytest-mock
+ruff
