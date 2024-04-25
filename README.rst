@@ -95,8 +95,8 @@ shell-wrapper along with the appropriate `/dev/sg*` device path:
 
 .. code-block:: bash
 
-   sudo /path/to/venv/bin/usbsdmux /dev/sg0 dut
-   sudo /path/to/venv/bin/usbsdmux /dev/sg0 host
+   $ sudo /path/to/venv/bin/usbsdmux /dev/sg0 dut
+   $ sudo /path/to/venv/bin/usbsdmux /dev/sg0 host
 
 Using as normal user / Reliable names
 -------------------------------------
