@@ -333,7 +333,7 @@ class Usb2642(object):
         command -- SCSI Command payload to send. 16-Byte buffer containing the SCSI
                    command parameters.
         sg_dxfer -- _SG_DXFER_*: Direction of the SCSI transfer
-        databuffer -- 512 byte long buffer to be written oder read
+        databuffer -- 512 byte long buffer to be written or read
         """
         sgio, sense = self._get_SGIO(command, sg_dxfer, databuffer)
         #    print("SGIO:")
@@ -390,7 +390,7 @@ class Usb2642(object):
         * writeData[1]
         * ...
         * I2C-Repeated Start
-        * I2C-Slave address wit R/W = R (1)
+        * I2C-Slave address with R/W = R (1)
         * readData[0]
         * readData[1]
         * ...

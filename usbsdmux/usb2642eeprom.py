@@ -90,7 +90,7 @@ class USB2642Eeprom(object):
             ("LUN_PWR_LB", ctypes.c_uint8),  # 0xA4 LUN Power Lo byte
             ("LUN_PWR_HB", ctypes.c_uint8),  # 0xA5 LUN Power Hi byte
             ("reserved1", ctypes.c_uint8 * (0xBF - 0xA6)),  # 0xA6 .. 0xBE reserved
-            ("DEV3_ID_STR", ctypes.c_uint8 * (0xC6 - 0xBF)),  # 0xBF .. 0xC5 Card Reader Identifyer String
+            ("DEV3_ID_STR", ctypes.c_uint8 * (0xC6 - 0xBF)),  # 0xBF .. 0xC5 Card Reader Identifier String
             ("INQ_VEN_STR", ctypes.c_uint8 * (0xCE - 0xC6)),  # 0xC6 .. 0xCD Inquiry Vendor String
             ("INQ_PRD_STR", ctypes.c_uint8 * (0xD3 - 0xCE)),  # 0xCE .. 0xD2 48QFN Inquiry Product String
             ("DYN_NUM_LUN", ctypes.c_uint8),  # 0xD3 Dynamic Number of LUNs
