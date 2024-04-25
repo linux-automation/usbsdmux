@@ -1,9 +1,9 @@
-import os.path
 import json
+import os.path
 
 import pytest
 
-from usbsdmux.sd_regs import SCR, CID, decode_csd
+from usbsdmux.sd_regs import CID, SCR, decode_csd
 
 REFS = [
     "02544d53413034471027b7748500bc00",

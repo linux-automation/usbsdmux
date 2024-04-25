@@ -20,12 +20,12 @@
 
 import argparse
 import errno
-import sys
 import json
+import sys
 
-from .usbsdmux import autoselect_driver, UnknownUsbSdMuxRevisionException, NotInHostModeException
-from .sd_regs import decoded_to_text
 from .mqtthelper import Config, publish_info
+from .sd_regs import decoded_to_text
+from .usbsdmux import NotInHostModeException, UnknownUsbSdMuxRevisionException, autoselect_driver
 
 
 def main():
