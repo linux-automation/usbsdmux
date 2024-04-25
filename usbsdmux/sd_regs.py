@@ -50,6 +50,7 @@ def decoded_to_text(decoded):
 
 class RegisterDecoder:
     "decode a register based on a mostly declarative description of the contents."
+
     FIELDS = {}
 
     def __init__(self, raw_hex):
