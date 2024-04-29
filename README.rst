@@ -6,60 +6,109 @@ Welcome to usbsdmux
 
 Purpose
 -------
-This software is used to control a special piece of hardware called usb-sd-mux from the command line or python.
+This software is used to control a special piece of hardware called the
+`USB-SD-Mux <https://www.linux-automation.com/en/products/usb-sd-mux.html>`_.
+It can be used via the command line or as a Python library.
 
-The usb-sd-mux is build around a `Microchip USB2642 <http://www.microchip.com/wwwproducts/en/USB2642>`_ card reader. Thus most of this software deals with interfacing this device using Linux ioctls().
+The USB-SD-Mux is built around a `Microchip USB2642 <http://www.microchip.com/wwwproducts/en/USB2642>`_ card reader. Thus most of this software deals with interfacing this device using Linux ioctls().
 
 This software is aimed to be used with `Labgrid <https://github.com/labgrid-project/labgrid>`_. But it can also be used stand-alone or in your own applications.
 
-High-Level Functions
---------------------
-usbsdmux provides the following functions:
 
-* Multiplexing the SD-Card to either DUT, Host or disconnect with ``usbsdmux``
-* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device: ``usbsdmux-configure``
+Quickstart
+----------
 
+To get started with the ``usbsdmux`` tool you will first need to install the ``usbsdmux`` package.
+There are different methods to doing this:
 
-Low-Level Functions
--------------------
-Under the hood this tool provides interfaces to access the following features of the Microchip USB2642:
+Installation from your Linux Distribution
+  The easiest way to install the ``usbsdmux`` tool and stay somewhat up to date without having to deal with Python virtual environments.
+  May not be available for your distribution and may be lacking in features because distributions ship older software versions.
 
-* Accessing the auxiliary I2C bus with write and write-read transactions with up to 512 bytes of payload using a simple python interface.
-* Writing an I2C Configuration-EEPROM on the configuration I2C.
-  This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
+Installation via pipx from PyPi
+  Another way to install the ``usbsdmux`` from a pre-packaged source.
+  Always installs the latest ``usbsdmux`` release, but needs to be kept up to date manually.
+  Also needs a re-install when your systems Python version is updated.
 
-Packages
---------
+  This installation method uses ``pipx`` to automate the Python virtual
+  environment management.
 
-.. image:: https://repology.org/badge/vertical-allrepos/usbsdmux.svg
-   :target: https://repology.org/project/usbsdmux/versions
-   :alt: Packaging status
-   :align: right
+Installation in a venv from PyPi
+  This method is very similar to the ``pipx`` method,
+  but manages the virtual environment manually instead of letting ``pipx`` manage it.
+
+Installation from Source
+  The way to go if you can not wait to test out new features.
+
+Installation from Distribution Packages
+```````````````````````````````````````
 
 This tool is `packaged <https://packages.debian.org/search?keywords=usbsdmux&searchon=names&exact=1>`_ in Debian 12
 (aka *bookworm*) and later.
 The package ships the ``usbsdmux`` tool and the corresponding *udev* -rules.
 So you can simply ``apt install usbsdmux`` and skip all installation steps below.
 
+.. image:: https://repology.org/badge/vertical-allrepos/usbsdmux.svg
+   :target: https://repology.org/project/usbsdmux/versions
+   :alt: Packaging status
+   :align: right
+
 Packages also exist for `some other distributions <https://repology.org/project/usbsdmux/versions>`_.
 
-Quickstart
-----------
+Installation via pipx from PyPi Packages
+````````````````````````````````````````
 
-Create and activate a virtualenv for usbsdmux:
+Install ``pipx`` via your Linux distributions package manager,
+e.g.:
 
 .. code-block:: bash
 
-   $ virtualenv -p python3 venv
+    $ sudo apt install pipx      # For Debian based distributions
+    $ sudo pacman -S python-pipx # For Arch Linux based distributions
+
+And follow the `pipx manual <https://github.com/pypa/pipx>`_ on how to add
+``pipx``-installed software to your ``PATH``, e.g. by using ``pipx ensurepath``.
+
+And finally install the ``usbsdmux`` package using ``pipx``:
+
+.. code-block:: bash
+
+    $ pipx install usbsdmux
+
+Installation in a venv from PyPi Packages
+`````````````````````````````````````````
+
+Create and activate a Python virtual environment for the ``usbsdmux`` package:
+
+.. code-block:: bash
+
+   $ python3 -m venv venv
    $ source venv/bin/activate
 
-Install usbsdmux into the virtualenv:
+Install the ``usbsdmux`` package into the virtual environment:
 
 .. code-block:: bash
 
-   $ pip install usbsdmux
+   $ python3 -m pip install usbsdmux
 
-Now you can run ``usbsdmux -h`` to get a list of possible
+Installation From Source
+````````````````````````
+
+To get the latest and greatest you can also install the ``usbsdmux`` package
+right from the git repository:
+
+.. code-block:: bash
+
+   $ git clone https://github.com/linux-automation/usbsdmux.git
+   $ cd usbsdmux
+   $ python3 -m venv venv
+   $ source venv/bin/activate
+   $ python3 -m pip install .
+
+Usage
+`````
+
+Once installed you can run ``usbsdmux`` command with the ``-h`` flag to get a list of possible
 command invocations:
 
 .. code-block:: text
@@ -85,18 +134,23 @@ command invocations:
      --config CONFIG       Set config file location
      --json                Format output as json. Useful for scripting.
 
+
 Using as root
 -------------
 If you just want to try the USB-SD-Mux (or maybe if it is just ok for you) you
-can just use ``usbsdmux`` as root.
+can just use the ``usbsdmux`` command as root.
 
-If you have installed this tool inside a virtualenv you can just call the
+If you have installed this tool inside a virtual environment you can just call the
 shell-wrapper along with the appropriate `/dev/sg*` device path:
 
 .. code-block:: bash
 
-   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 dut
-   sudo /path/to/virtualenv/bin/usbsdmux /dev/sg0 host
+   $ sudo /path/to/venv/bin/usbsdmux /dev/sg0 dut
+   $ sudo /path/to/venv/bin/usbsdmux /dev/sg0 host
+
+If you encounter any issues using the USB-SD-Mux at this point consider consulting
+the `Troubleshooting`_ section later in this README.
+
 
 Using as normal user / Reliable names
 -------------------------------------
@@ -139,6 +193,35 @@ the ``/dev/usb-sd-mux/`` directory:
        Depending on your Linux distribution you may want to create/use another
        group for this purpose and adapt the ``udev`` rule accordingly.
 
+
+How it works
+------------
+
+High-Level Functions
+````````````````````
+The ``usbsdmux`` package provides the the following features:
+
+* Muxing the SD-Card to either the DUT, Host or disconnecting it altogether via the ``usbsdmux`` command.
+* Writing the Configuration-EEPROM of the USB2642 from the command line to customize the representation of the USB device via the ``usbsdmux-configure`` command.
+
+Low-Level Functions
+```````````````````
+Under the hood this tool provides interfaces to access the following features of the Microchip USB2642:
+
+* Accessing the auxiliary I2C bus with write and write-read transactions with up to 512 bytes of payload using a simple Python interface.
+* Writing an I2C Configuration-EEPROM on the configuration I2C.
+  This is done using an undocumented command that was reverse-engineered from Microchip's freely available EOL-Tools.
+
+
+MQTT Statistics
+---------------
+
+This tool can be configured to send certain statistics to a MQTT broker.
+To enable this function create a config file at ``/etc/usbsdmux.config`` or use ``--config`` specify a file location.
+
+See example config file `usbsdmux.config <contrib/usbsdmux.config>`_.
+
+
 Troubleshooting
 ---------------
 
@@ -163,18 +246,11 @@ Troubleshooting
     :alt: pypi.org
     :target: https://pypi.org/project/usbsdmux
 
-MQTT Statistics
----------------
-
-This tool can be configured to send certain statistics to a MQTT broker.
-To enable this function create a config file at ``/etc/usbsdmux.config`` or use ``--config`` specify a file location.
-
-See example config file `usbsdmux.config <contrib/usbsdmux.config>`_.
 
 Contributing
 ------------
 
-Thank you for thinking about contributing to this project!
+Thank you for considering a contribution to this project!
 Changes should be submitted via a
 `Github pull request <https://github.com/linux-automation/usbsdmux/pulls>`_.
 
