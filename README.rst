@@ -25,10 +25,17 @@ Installation from your Linux Distribution
   The easiest way to install the ``usbsdmux`` tool and stay somewhat up to date without having to deal with Python virtual environments.
   May not be available for your distribution and may be lacking in features because distributions ship older software versions.
 
-Installation from PyPi
+Installation via pipx from PyPi
   Another way to install the ``usbsdmux`` from a pre-packaged source.
   Always installs the latest ``usbsdmux`` release, but needs to be kept up to date manually.
   Also needs a re-install when your systems Python version is updated.
+
+  This installation method uses ``pipx`` to automate the Python virtual
+  environment management.
+
+Installation in a venv from PyPi
+  This method is very similar to the ``pipx`` method,
+  but manages the virtual environment manually instead of letting ``pipx`` manage it.
 
 Installation from Source
   The way to go if you can not wait to test out new features.
@@ -48,8 +55,28 @@ So you can simply ``apt install usbsdmux`` and skip all installation steps below
 
 Packages also exist for `some other distributions <https://repology.org/project/usbsdmux/versions>`_.
 
-Installation from PyPi Packages
-```````````````````````````````
+Installation via pipx from PyPi Packages
+````````````````````````````````````````
+
+Install ``pipx`` via your Linux distributions package manager,
+e.g.:
+
+.. code-block:: bash
+
+    $ sudo apt install pipx      # For Debian based distributions
+    $ sudo pacman -S python-pipx # For Arch Linux based distributions
+
+And follow the `pipx manual <https://github.com/pypa/pipx>`_ on how to add
+``pipx``-installed software to your ``PATH``, e.g. by using ``pipx ensurepath``.
+
+And finally install the ``usbsdmux`` package using ``pipx``:
+
+.. code-block:: bash
+
+    $ pipx install usbsdmux
+
+Installation in a venv from PyPi Packages
+`````````````````````````````````````````
 
 Create and activate a Python virtual environment for the ``usbsdmux`` package:
 
