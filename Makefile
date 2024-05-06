@@ -2,47 +2,69 @@ PYTHON=python3
 
 PYTHON_ENV_ROOT=envs
 PYTHON_PACKAGING_VENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging-env
-PYTHON_TESTING_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
-
-.PHONY: clean
+PYTHON_QA_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-qa-env
 
 # packaging environment #######################################################
+.PHONY: packaging-env build _release
+
 $(PYTHON_PACKAGING_VENV)/.created: REQUIREMENTS.packaging.txt
 	rm -rf $(PYTHON_PACKAGING_VENV) && \
 	$(PYTHON) -m venv $(PYTHON_PACKAGING_VENV) && \
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
-	pip install --upgrade pip && \
-	pip install -r REQUIREMENTS.packaging.txt
+	$(PYTHON) -m pip install --upgrade pip && \
+	$(PYTHON) -m pip install -r REQUIREMENTS.packaging.txt
 	date > $(PYTHON_PACKAGING_VENV)/.created
 
 packaging-env: $(PYTHON_PACKAGING_VENV)/.created
 
-sdist: packaging-env
+build: packaging-env
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
 	rm -rf dist *.egg-info && \
 	./setup.py sdist
 
-_release: sdist
+_release: build
 	. $(PYTHON_PACKAGING_VENV)/bin/activate && \
-	twine upload dist/*
+	$(PYTHON) -m twine upload dist/*
 
 # helper ######################################################################
+.PHONY: clean envs
+
 clean:
 	rm -rf $(PYTHON_ENV_ROOT)
 
-envs: env packaging-env
+envs: packaging-env qa-env
 
 # testing #####################################################################
-$(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.qa.txt
-	rm -rf $(PYTHON_TESTING_ENV) && \
-	$(PYTHON) -m venv $(PYTHON_TESTING_ENV) && \
-	. $(PYTHON_TESTING_ENV)/bin/activate && \
-	pip install pip --upgrade && \
-	pip install -r ./REQUIREMENTS.qa.txt && \
-	date > $(PYTHON_TESTING_ENV)/.created
+.PHONY: qa qa-env qa-black qa-codespell qa-flake8 qa-pytest
 
-qa: $(PYTHON_TESTING_ENV)/.created
-	. $(PYTHON_TESTING_ENV)/bin/activate && \
-	black --check --diff . && \
-	flake8 && \
-	python3 -m pytest -vv
+$(PYTHON_QA_ENV)/.created: REQUIREMENTS.qa.txt
+	rm -rf $(PYTHON_QA_ENV) && \
+	$(PYTHON) -m venv $(PYTHON_QA_ENV) && \
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	$(PYTHON) -m pip install pip --upgrade && \
+	$(PYTHON) -m pip install -r ./REQUIREMENTS.qa.txt && \
+	date > $(PYTHON_QA_ENV)/.created
+
+qa-env: $(PYTHON_QA_ENV)/.created
+
+qa: qa-black qa-codespell qa-flake8 qa-pytest
+
+qa-black: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	$(PYTHON) -m black --check --diff .
+
+qa-codespell: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	codespell
+
+qa-codespell-fix: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	codespell -w
+
+qa-flake8: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	$(PYTHON) -m flake8
+
+qa-pytest: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	$(PYTHON) -m pytest -vv
