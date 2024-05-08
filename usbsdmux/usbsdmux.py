@@ -45,7 +45,7 @@ def autoselect_driver(sg):
     sg_name = os.path.basename(base_sg)
     model_filename = f"/sys/class/scsi_generic/{sg_name}/device/model"
     try:
-        with open(model_filename, "r") as fh:
+        with open(model_filename) as fh:
             model = fh.read().strip()
         if model == "sdmux HS-SD/MMC":
             return UsbSdMuxClassic(sg)

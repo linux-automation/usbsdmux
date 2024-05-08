@@ -21,7 +21,7 @@
 from .usb2642 import Usb2642
 
 
-class I2cGpio(object):
+class I2cGpio:
     # Registers inside the supported GPIO expanders
     _register_inputPort = 0x00
     _register_outputPort = 0x01

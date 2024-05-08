@@ -39,7 +39,7 @@ class VerificationFailedException(Exception):
     pass
 
 
-class USB2642Eeprom(object):
+class USB2642Eeprom:
     """
     Provides an interface to write the configuration EEPROM of a USB2642.
     """

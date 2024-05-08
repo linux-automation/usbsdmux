@@ -48,7 +48,7 @@ class Config:
 
 def _read_file(filename):
     try:
-        with open(filename, "r") as f:
+        with open(filename) as f:
             return f.read()
     except FileNotFoundError:
         return None
