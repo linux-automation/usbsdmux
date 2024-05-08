@@ -1,3 +1,42 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "usbsdmux"
+description = "Tool to control an USB-SD-Mux from the command line"
+version = "24.01.1"
+authors = [
+  { name = "Chris Fiege", email = "python@pengutronix.de" },
+]
+readme = "README.rst"
+license = { "text" = "LGPL-2.1-or-later" }
+dependencies = []
+classifiers = [
+    "Environment :: Console",
+    "Natural Language :: English",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.optional-dependencies]
+mqtt = ["paho-mqtt"]
+
+[project.urls]
+homepage="https://github.com/linux-automation/usbsdmux"
+documentation="https://www.linux-automation.com/usbsdmux-M01/"
+
+[project.scripts]
+usbsdmux = "usbsdmux.__main__:main"
+usbsdmux-configure = "usbsdmux.usb2642eeprom:main"
+usbsdmux-service = "usbsdmux.service:main"
+
+[tool.setuptools]
+packages = [
+  "usbsdmux",
+]
+include-package-data = true
+
 [tool.ruff]
 line-length = 119
 exclude = [
