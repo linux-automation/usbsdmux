@@ -50,10 +50,8 @@ def string_to_uint8_array(str, array_length, c_string=False, padding=0xFF, encod
 
     # Determine number of bytes to copy
     nbytes = str.encode(encoding)
-    if c_string:
-        count = min(len(nbytes), array_length - 1)
-    else:
-        count = min(len(nbytes), array_length)
+    length = array_length - 1 if c_string else array_length
+    count = min(len(nbytes), length)
 
     # Do the actual copy
     for i in range(count):

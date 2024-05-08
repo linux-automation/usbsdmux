@@ -1,7 +1,7 @@
-import os
-import sys
 import configparser
 import json
+import os
+import sys
 
 
 class Config:
@@ -63,6 +63,7 @@ def _read_int(filename, base=10):
 
 def _gather_data(ctl, sg, mode):
     import socket
+
     import pkg_resources
 
     base_sg = os.path.realpath(sg)

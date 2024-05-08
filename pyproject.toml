@@ -1,7 +1,16 @@
-[tool.black]
+[tool.ruff]
 line-length = 119
+exclude = [
+  "__pycache__",
+  "usbsdmux.egg-info",
+  ".pybuild",
+  "build",
+  "debian",
+  "env",
+  "venv",
+  "envs",
+  "dist",
+]
 
-[tool.flake8]
-max-line-length = 119
-count = true
-exclude = "build,debian,dist,envs,fastentrypoints.py,__pycache__,contrib,setup.py,venv,usbsdmux.egg-info,.tox"
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "SIM"]

@@ -21,8 +21,8 @@
 import os
 import time
 
-from .i2c_gpio import Pca9536, Tca6408
 from . import sd_regs
+from .i2c_gpio import Pca9536, Tca6408
 
 
 class UnknownUsbSdMuxRevisionException(Exception):

@@ -19,10 +19,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 from .usb2642 import Usb2642
-from abc import ABC
 
 
-class I2cGpio(ABC):
+class I2cGpio(object):
     # Registers inside the supported GPIO expanders
     _register_inputPort = 0x00
     _register_outputPort = 0x01

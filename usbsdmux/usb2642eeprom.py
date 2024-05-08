@@ -23,9 +23,9 @@ import ctypes
 import time
 
 from .ctypehelper import (
+    list_to_uint8_array,
     string_to_microchip_unicode_uint8_array,
     string_to_uint8_array,
-    list_to_uint8_array,
 )
 from .usb2642 import Usb2642
 
