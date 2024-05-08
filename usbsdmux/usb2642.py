@@ -48,7 +48,7 @@ class SDTransactionFailed(Exception):
     pass
 
 
-class Usb2642(object):
+class Usb2642:
     """
     This class provides an interface to interact with devices on a Microchip
     USB2642 auxiliary I2C Bus and to write configuration to an EEPROM on the
@@ -342,7 +342,7 @@ class Usb2642(object):
         with open(self.sg, "r+b", buffering=0) as fh:
             rc = fcntl.ioctl(fh, self._SG_IO, sgio)
             if rc != 0:
-                raise IoctlFailed("SG_IO ioctl() failed with non-zero exit-code {}".format(rc))
+                raise IoctlFailed(f"SG_IO ioctl() failed with non-zero exit-code {rc}")
         return databuffer, sense, sgio
 
     def write_config(self, data):
@@ -417,7 +417,7 @@ class Usb2642(object):
 
         if sgio.status != 0:
             raise I2cTransactionFailed(
-                "SCSI-Transaction ended with status {}. I2C-Transaction has probably failed.".format(sgio.status)
+                f"SCSI-Transaction ended with status {sgio.status}. I2C-Transaction has probably failed."
             )
 
         return list(data[:readLength])
@@ -453,7 +453,7 @@ class Usb2642(object):
 
         if sgio.status != 0:
             raise I2cTransactionFailed(
-                "SCSI-Transaction ended with status {}. I2C-Transaction has probably failed.".format(sgio.status)
+                f"SCSI-Transaction ended with status {sgio.status}. I2C-Transaction has probably failed."
             )
 
     def _read_register(self, reg, size, retries=5):
@@ -472,7 +472,7 @@ class Usb2642(object):
 
             if sgio.status != 0:
                 raise SDTransactionFailed(
-                    "SCSI Transaction ended with status {}. SD Transaction has probably failed.".format(sgio.status)
+                    f"SCSI Transaction ended with status {sgio.status}. SD Transaction has probably failed."
                 )
 
             break

@@ -124,7 +124,7 @@ def to_pretty_hex(buffer):
         temp_buf = temp_buf[8:]
         res += "0x{:02X}\t{}  {}\n".format(
             offs,
-            " ".join(["{:02X}".format(x) for x in window]),
+            " ".join([f"{x:02X}" for x in window]),
             " ".join([chr(x) if chr(x) in string.printable.split(" ")[0] else "." for x in window]),
         )
         offs += 8
