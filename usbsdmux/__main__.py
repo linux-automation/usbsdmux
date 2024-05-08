@@ -54,25 +54,7 @@ def main():
 
     subparsers.add_parser("info", help="Show information about the SD card")
 
-    # These arguments were previously used for the client/service
-    # based method to grant USB-SD-Mux access to non-root users.
-    # The client/service model is no longer needed due to new udev
-    # rules and a change to how the /dev/sg* devices are accessed.
-    # Display a warning but do not fail when these are used so
-    # existing scripts do not break and can be upgraded gracefully.
-    parser.add_argument("-d", "--direct", help=argparse.SUPPRESS, action="store_true", default=None)
-    parser.add_argument("-c", "--client", help=argparse.SUPPRESS, action="store_true", default=None)
-    parser.add_argument("-s", "--socket", help=argparse.SUPPRESS, default=None)
-
     args = parser.parse_args()
-
-    if any(arg is not None for arg in (args.direct, args.client, args.socket)):
-        print(
-            "usbsdmux: usage of -s/-c/-d arguments is deprecated "
-            "as the service/client split is no longer required. "
-            "Please upgrade your scripts to not supply either of these arguments",
-            file=sys.stderr,
-        )
 
     config = Config(args.config)
 
