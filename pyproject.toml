@@ -1,11 +1,10 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools_scm[toml]"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "usbsdmux"
 description = "Tool to control an USB-SD-Mux from the command line"
-version = "24.01.1"
 authors = [
   { name = "Chris Fiege", email = "python@pengutronix.de" },
 ]
@@ -18,6 +17,7 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python :: 3 :: Only",
 ]
+dynamic = ["version"] # via setuptools_scm
 
 [project.optional-dependencies]
 mqtt = ["paho-mqtt"]
@@ -36,6 +36,9 @@ packages = [
   "usbsdmux",
 ]
 include-package-data = true
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
 
 [tool.ruff]
 line-length = 119
