@@ -132,7 +132,7 @@ def _gather_data(ctl, sg, mode):
 def publish_info(ctl, config, sg, mode):
     """
     Publish info to mqtt server, if mqtt is enabled.
-    This requires installing REQUIREMENTS.mqtt.txt.
+    This requires installing paho-mqtt.
     """
 
     if not config.mqtt_enabled:
@@ -146,7 +146,9 @@ def publish_info(ctl, config, sg, mode):
     except ImportError:
         print(
             "Sending data to an mqtt server requires paho-mqtt",
-            "Please install REQUIREMENTS.mqtt.txt",
+            "Please install it, e.g. by installing usbsdmux via:",
+            "",
+            '    python3 -m pip install "usbsdmux[mqtt]"',
             sep="\n",
             file=sys.stderr,
         )
