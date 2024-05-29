@@ -1,4 +1,0 @@
-codespell
-pytest
-pytest-mock
-ruff
