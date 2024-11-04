@@ -217,8 +217,8 @@ class UsbSdMuxFast(UsbSdMux):
     _card_inserted = 0x00
     _card_removed = Tca6408.gpio_3
 
-    gpio0 = Tca6408.gpio_4
-    gpio1 = Tca6408.gpio_5
+    gpio0 = Tca6408.gpio_5
+    gpio1 = Tca6408.gpio_4
 
     def __init__(self, sg):
         self._tca = Tca6408(sg)
