@@ -35,8 +35,13 @@ def decoded_to_text(decoded):
             text.append(f"  {f['field']}: {f['name']}")
         else:
             text.append(f"  {f['field']}")
-        raw = f["raw"]
-        text.append(f"    raw: 0b{format(raw[0], '0%db' % raw[1])} == 0x{raw[0]:0x} == {int(raw[0])}")
+
+        (raw_value, raw_width) = f["raw"]
+
+        # Pad the binary representation of `raw_value` to the number of bits of the field.
+        bits_str = format(raw_value, f"0{raw_width}b")
+        text.append(f"    raw: 0b{bits_str} == 0x{raw_value:0x} == {int(raw_value)}")
+
         if "enum" in f:
             text.append(f"    enum: {f['enum']} {f.get('unit', '')}".rstrip())
         if "bits" in f:
