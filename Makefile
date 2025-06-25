@@ -36,19 +36,19 @@ clean:
 envs: packaging-env qa-env
 
 # testing #####################################################################
-.PHONY: qa qa-env qa-codespell qa-pytest qa-ruff
+.PHONY: qa qa-env qa-codespell qa-pytest qa-ruff qa-reuse
 
 $(PYTHON_QA_ENV)/.created:
 	rm -rf $(PYTHON_QA_ENV) && \
 	$(PYTHON) -m venv $(PYTHON_QA_ENV) && \
 	. $(PYTHON_QA_ENV)/bin/activate && \
 	$(PYTHON) -m pip install pip --upgrade && \
-	$(PYTHON) -m pip install codespell ruff pytest pytest-mock  && \
+	$(PYTHON) -m pip install codespell ruff pytest pytest-mock reuse && \
 	date > $(PYTHON_QA_ENV)/.created
 
 qa-env: $(PYTHON_QA_ENV)/.created
 
-qa: qa-codespell qa-pytest qa-ruff
+qa: qa-codespell qa-pytest qa-ruff qa-reuse
 
 qa-codespell: qa-env
 	. $(PYTHON_QA_ENV)/bin/activate && \
@@ -69,3 +69,7 @@ qa-ruff: qa-env
 qa-ruff-fix: qa-env
 	. $(PYTHON_QA_ENV)/bin/activate && \
 	ruff format && ruff check --fix
+
+qa-reuse: qa-env
+	. $(PYTHON_QA_ENV)/bin/activate && \
+	reuse lint
