@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Pengutronix, Leonard Göhrs <entwicklung@pengutronix.de>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 name: Check and Publish
 
 on:
