@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2021 Pengutronix, Chris Fiege <entwicklung@pengutronix.de>
+
 PYTHON=python3
 
 PYTHON_ENV_ROOT=envs
