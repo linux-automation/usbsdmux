@@ -19,6 +19,9 @@ import configparser
 import json
 import os
 import sys
+from typing import Optional
+
+from usbsdmux.usbsdmux import UsbSdMux
 
 
 class Config:
@@ -26,7 +29,7 @@ class Config:
     Reads the configuration file by default at /etc/usbsdmux.config
     """
 
-    def __init__(self, configfile):
+    def __init__(self, configfile: Optional[str] = None):
         if configfile is not None:
             if not os.path.isfile(configfile):
                 raise FileNotFoundError("Config file {configfile} not found")
@@ -63,7 +66,7 @@ class Config:
         self.send_on_dut = send_section.get("dut", False)
 
 
-def _read_file(filename):
+def _read_file(filename: str) -> Optional[str]:
     try:
         with open(filename) as f:
             return f.read()
@@ -71,14 +74,14 @@ def _read_file(filename):
         return None
 
 
-def _read_int(filename, base=10):
+def _read_int(filename: str, base: int = 10) -> Optional[int]:
     try:
         return int(_read_file(filename).strip(), base)
     except TypeError:
         return None
 
 
-def _gather_data(ctl, sg, mode):
+def _gather_data(ctl: UsbSdMux, sg: str, mode: str) -> dict:
     import socket
 
     import pkg_resources
@@ -146,7 +149,7 @@ def _gather_data(ctl, sg, mode):
     return data
 
 
-def publish_info(ctl, config, sg, mode):
+def publish_info(ctl: UsbSdMux, config: Config, sg: str, mode: str) -> None:
     """
     Publish info to mqtt server, if mqtt is enabled.
     This requires installing paho-mqtt.
@@ -162,7 +165,7 @@ def publish_info(ctl, config, sg, mode):
         import paho.mqtt.publish as mqtt
     except ImportError:
         print(
-            "Sending data to an mqtt server requires paho-mqtt",
+            "Sending data to a mqtt server requires paho-mqtt",
             "Please install it, e.g. by installing usbsdmux via:",
             "",
             '    python3 -m pip install "usbsdmux[mqtt]"',
@@ -172,10 +175,13 @@ def publish_info(ctl, config, sg, mode):
         exit(1)
 
     data = _gather_data(ctl, sg, mode)
-    mqtt.single(
-        config.mqtt_topic,
-        payload=json.dumps(data),
-        hostname=config.mqtt_server,
-        port=config.mqtt_port,
-        auth=config.mqtt_auth,
-    )
+    try:
+        mqtt.single(
+            config.mqtt_topic,
+            payload=json.dumps(data),
+            hostname=config.mqtt_server,
+            port=config.mqtt_port,
+            auth=config.mqtt_auth,
+        )
+    except Exception as e:
+        print("Sending statistics via MQTT failed: (", e, "). Continuing anyway.", sep="", file=sys.stderr)
