@@ -1,0 +1,26 @@
+version = 1
+
+# Generated data for testing
+[[annotations]]
+path = [
+    "tests/reference/*.json",
+    "tests/reference/*.text",
+    ]
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Pengutronix, Jan Lübbe <entwicklung@pengutronix.de>"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Config files etc.
+[[annotations]]
+path = [
+    ".codespellrc",
+    ".gitignore",
+    "MANIFEST.in",
+    "pyproject.toml",
+    "REUSE.toml",
+    "contrib/usbsdmux.config",
+    ".github/workflows/check-and-publish.yaml",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2017 Pengutronix, Chris Fiege <entwicklung@pengutronix.de>"
+SPDX-License-Identifier = "CC0-1.0"

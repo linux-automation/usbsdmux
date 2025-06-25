@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2023 Pengutronix, Jan Lübbe <entwicklung@pengutronix.de>
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 set -ex
 
 self="$(realpath "${0}")" && selfdir="$(dirname "${self}")"
