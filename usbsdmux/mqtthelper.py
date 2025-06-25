@@ -165,7 +165,7 @@ def publish_info(ctl: UsbSdMux, config: Config, sg: str, mode: str) -> None:
         import paho.mqtt.publish as mqtt
     except ImportError:
         print(
-            "Sending data to an mqtt server requires paho-mqtt",
+            "Sending data to a mqtt server requires paho-mqtt",
             "Please install it, e.g. by installing usbsdmux via:",
             "",
             '    python3 -m pip install "usbsdmux[mqtt]"',
@@ -175,10 +175,13 @@ def publish_info(ctl: UsbSdMux, config: Config, sg: str, mode: str) -> None:
         exit(1)
 
     data = _gather_data(ctl, sg, mode)
-    mqtt.single(
-        config.mqtt_topic,
-        payload=json.dumps(data),
-        hostname=config.mqtt_server,
-        port=config.mqtt_port,
-        auth=config.mqtt_auth,
-    )
+    try:
+        mqtt.single(
+            config.mqtt_topic,
+            payload=json.dumps(data),
+            hostname=config.mqtt_server,
+            port=config.mqtt_port,
+            auth=config.mqtt_auth,
+        )
+    except Exception as e:
+        print("Sending statistics via MQTT failed: (", e, "). Continuing anyway.", sep="", file=sys.stderr)
