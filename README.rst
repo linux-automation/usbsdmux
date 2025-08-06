@@ -1,4 +1,4 @@
-.. SPDX-FileCopyrightText: 2017 Pengutronix, Chris Fiege <entwicklung@pengutronix.de>
+.. SPDX-FileCopyrightText: 2017 The USB-SD-Mux Authors
 .. SPDX-License-Identifier: LGPL-2.1-or-later
 
 Welcome to usbsdmux

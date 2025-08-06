@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-# SPDX-FileCopyrightText: 2024 Pengutronix, Chris Fiege <entwicklung@pengutronix.de>
+# SPDX-FileCopyrightText: 2024 The USB-SD-Mux Authors
 
 import configparser
 import json

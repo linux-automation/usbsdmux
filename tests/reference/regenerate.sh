@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2023 Pengutronix, Jan Lübbe <entwicklung@pengutronix.de>
+# SPDX-FileCopyrightText: 2023 The USB-SD-Mux Authors
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 set -ex

@@ -1,8 +1,7 @@
 # USB-SD-Mux
 
 # SPDX-License-Identifier: LGPL-2.1-or-later
-# SPDX-FileCopyrightText: 2017 Pengutronix, Chris Fiege <entwicklung@pengutronix.de>
-# SPDX-FileCopyrightText: 2022 Andreas Pretzsch <apr@cn-eng.de>
+# SPDX-FileCopyrightText: 2017 The USB-SD-Mux Authors
 
 ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]*", ATTRS{manufacturer}=="Pengutronix", ATTRS{product}=="usb-sd-mux*", SYMLINK="usb-sd-mux/id-$attr{serial}", TAG+="uaccess", GROUP="plugdev"
 ACTION=="add", SUBSYSTEM=="scsi_generic", KERNEL=="sg[0-9]*", ATTRS{manufacturer}=="Linux Automation GmbH", ATTRS{product}=="usb-sd-mux*", SYMLINK="usb-sd-mux/id-$attr{serial}", TAG+="uaccess", GROUP="plugdev"

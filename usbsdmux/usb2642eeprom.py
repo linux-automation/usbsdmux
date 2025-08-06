@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # SPDX-License-Identifier: LGPL-2.1-or-later
-# SPDX-FileCopyrightText: 2017 Pengutronix, Chris Fiege <entwicklung@pengutronix.de>
+# SPDX-FileCopyrightText: 2017 The USB-SD-Mux Authors
 
 import argparse
 import ctypes
