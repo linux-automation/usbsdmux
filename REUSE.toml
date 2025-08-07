@@ -1,0 +1,35 @@
+version = 1
+
+# Generated data for testing
+[[annotations]]
+path = [
+    "tests/reference/*.json",
+    "tests/reference/*.text",
+    ]
+precedence = "override"
+SPDX-FileCopyrightText = "2023 The USB-SD-Mux Authors"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Config files etc.
+[[annotations]]
+path = [
+    ".codespellrc",
+    ".gitignore",
+    "MANIFEST.in",
+    "pyproject.toml",
+    "REUSE.toml",
+    "contrib/usbsdmux.config",
+    ".github/workflows/check-and-publish.yaml",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2017 The USB-SD-Mux Authors"
+SPDX-License-Identifier = "CC0-1.0"
+
+# The AUTHORS file itself
+[[annotations]]
+path = [
+    "AUTHORS",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2025 The USB-SD-Mux Authors"
+SPDX-License-Identifier = "CC0-1.0"
