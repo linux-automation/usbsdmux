@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 # SPDX-FileCopyrightText: 2017 The USB-SD-Mux Authors
 
-import os
 import time
 
 from . import sd_regs
 from .i2c_gpio import Pca9536, Tca6408
+from .platform import get_model
 
 
 class UnknownUsbSdMuxRevisionException(Exception):
@@ -23,27 +23,22 @@ def autoselect_driver(sg):
     Create a new UsbSdMux with the correct driver for the device at /dev/<sg>
 
     Arguments:
-    sg -- /dev/sg* to use
+    sg -- Device path:
+          - Linux: /dev/sg*
+          - Windows: \\\\.\\PhysicalDrive*
     """
+    model = get_model(sg)
+    if not model:
+        raise UnknownUsbSdMuxRevisionException(f"Could not determine type of USB-SD-Mux. Does {sg} exist?")
 
-    base_sg = os.path.realpath(sg)
-    sg_name = os.path.basename(base_sg)
-    model_filename = f"/sys/class/scsi_generic/{sg_name}/device/model"
-    try:
-        with open(model_filename) as fh:
-            model = fh.read().strip()
-        if model == "sdmux HS-SD/MMC":
-            return UsbSdMuxClassic(sg)
-        elif model == "sdFST HS-SD/MMC":
-            return UsbSdMuxFast(sg)
-        else:
-            raise UnknownUsbSdMuxRevisionException(
-                f"Could not determine type of USB-SD-Mux. Found unknown SCSI model '{model}'."
-            )
-    except FileNotFoundError as e:
+    if model == "sdmux HS-SD/MMC":
+        return UsbSdMuxClassic(sg)
+    elif model == "sdFST HS-SD/MMC":
+        return UsbSdMuxFast(sg)
+    else:
         raise UnknownUsbSdMuxRevisionException(
-            f"Could not determine type of USB-SD-Mux. Does {model_filename} exist?"
-        ) from e
+            f"Could not determine type of USB-SD-Mux. Found unknown SCSI model '{model}'."
+        )
 
 
 class UsbSdMux:
