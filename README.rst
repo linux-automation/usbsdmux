@@ -188,6 +188,9 @@ the ``/dev/usb-sd-mux/`` directory:
     lrwxrwxrwx 1 root plugdev 6 Mar 27 00:33 id-000000000078 -> ../sg2
     lrwxrwxrwx 1 root plugdev 6 Mar 24 09:51 id-000000000378 -> ../sg1
 
+If it does not work as expected the udevadm test command can be used
+to get more information and debug: ``udevadm test /dev/sg2``.
+
 .. [1] The ``plugdev`` group is used in Debian and Debian based distributions
        (like Ubuntu and Linux Mint) to grant access to pluggable gadgets.
        Depending on your Linux distribution you may want to create/use another
