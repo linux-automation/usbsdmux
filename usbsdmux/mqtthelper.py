@@ -150,7 +150,7 @@ def publish_info(ctl: UsbSdMux, config: Config, sg: str, mode: str) -> None:
         import paho.mqtt.publish as mqtt
     except ImportError:
         print(
-            "Sending data to a mqtt server requires paho-mqtt",
+            "Sending data to an mqtt server requires paho-mqtt",
             "Please install it, e.g. by installing usbsdmux via:",
             "",
             '    python3 -m pip install "usbsdmux[mqtt]"',
