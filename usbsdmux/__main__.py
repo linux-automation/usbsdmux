@@ -14,7 +14,7 @@ from .usbsdmux import NotInHostModeException, UnknownUsbSdMuxRevisionException, 
 
 
 def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(prog=sys.argv[0], formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("sg", metavar="SG", help="/dev/sg* to use")
 
