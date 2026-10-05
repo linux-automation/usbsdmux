@@ -4,12 +4,10 @@
 # SPDX-FileCopyrightText: 2017 The USB-SD-Mux Authors
 
 import ctypes
-import fcntl
 from time import sleep
 
-from .ctypehelper import (
-    list_to_uint8_array,
-)
+from .ctypehelper import list_to_uint8_array
+from .platform import IoctlFailed, execute_scsi_command
 
 """
 This modules provides an interface to use the auxiliary and configuration
@@ -18,10 +16,6 @@ I2C-busses of the Microchip USB2642.
 
 
 class FrameLengthException(Exception):
-    pass
-
-
-class IoctlFailed(Exception):
     pass
 
 
@@ -73,63 +67,6 @@ class Usb2642:
         sg -- The sg-device to use. E.g. "/dev/sg1"
         """
         self.sg = sg
-
-    class _SgioHdrStruct(ctypes.Structure):
-        """
-        Structure used to access the ioctl() to send arbitrary SCSI-commands.
-
-        Reflects the Kernel-Struct from:
-        <scsi/sg.h> sg_io_hdr_t.
-        """
-
-        _fields_ = [
-            ("interface_id", ctypes.c_int),
-            ("dxfer_direction", ctypes.c_int),
-            ("cmd_len", ctypes.c_ubyte),
-            ("mx_sb_len", ctypes.c_ubyte),
-            ("iovec_count", ctypes.c_ushort),
-            ("dxfer_len", ctypes.c_uint),
-            ("dxferp", ctypes.c_void_p),
-            ("cmdp", ctypes.c_void_p),
-            ("sbp", ctypes.c_void_p),
-            ("timeout", ctypes.c_uint),
-            ("flags", ctypes.c_uint),
-            ("pack_id", ctypes.c_int),
-            ("usr_ptr", ctypes.c_void_p),
-            ("status", ctypes.c_ubyte),
-            ("masked_status", ctypes.c_ubyte),
-            ("msg_status", ctypes.c_ubyte),
-            ("sb_len_wr", ctypes.c_ubyte),
-            ("host_status", ctypes.c_ushort),
-            ("driver_status", ctypes.c_ushort),
-            ("resid", ctypes.c_int),
-            ("duration", ctypes.c_uint),
-            ("info", ctypes.c_uint),
-        ]
-
-    # sg_io_hdr_t contains 9 ints, 3 short ints, 6 chars and 4 pointers. So its
-    # size is 9 * 4 + 3 * 2 + 6 * 1 + 4 * 4 = 64 on 32 bit architectures. On 64
-    # bit architectures there are two holes in the struct:
-    # - 4 bytes before *usr_ptr to make the pointer aligned
-    # - 4 bytes at the end to make the size a multiple of 8.
-    # So the size there is: 9 * 4 + 3 * 2 + 6 * 1 + 4 * 8 + 2 * 4 = 88.
-    if ctypes.sizeof(ctypes.c_void_p) == 4:
-        assert ctypes.sizeof(_SgioHdrStruct) == 64
-    else:
-        assert ctypes.sizeof(ctypes.c_void_p) == 8
-        assert ctypes.sizeof(_SgioHdrStruct) == 88
-
-    """IOCTL for SG_IO"""
-    _SG_IO = 0x2285  # <scsi/sg.h>
-
-    """SgioHdr dxfer direction constant: No direction"""
-    _SG_DXFER_NONE = -1
-
-    """SgioHdr dxfer direction constant: Host to device"""
-    _SG_DXFER_TO_DEV = -2
-
-    """SgioHdr dxfer direction constant: Device to Host"""
-    _SG_DXFER_FROM_DEV = -3
 
     """
     This Opcode represents a vendor specific SCSI command.
@@ -247,89 +184,6 @@ class Usb2642:
 
         return cmd, readDataArray
 
-    def _get_SGIO(self, command, Sg_Dxfer, databuffer):
-        """Fill the SG_IO ioctl() -structure with sane defaults for the given
-        command.
-        The command will create a 64-byte sense-buffer for returned status.
-
-        Arguments:
-        command -- SCSI-Command to use. ctypes.c_uint8
-        Sg_Dxfer -- _SG_DXFER_* to set the direction of the SCSI transfer.
-        databuffer -- 512 bytes buffer of the block to read or write.
-        """
-        sense = ctypes.c_buffer(64)
-
-        sgio = self._SgioHdrStruct(
-            # "S" for SCSI
-            interface_id=ord("S"),
-            # SG_DXFER_*
-            dxfer_direction=Sg_Dxfer,
-            # length of whatever we put into cmd
-            cmd_len=ctypes.sizeof(command),
-            # length of sense buffer
-            mx_sb_len=ctypes.sizeof(sense),
-            iovec_count=0,
-            # data transfer length
-            dxfer_len=ctypes.sizeof(databuffer),
-            # pointer to data transfer buffer
-            dxferp=ctypes.cast(databuffer, ctypes.c_void_p),
-            # command to perform
-            cmdp=ctypes.cast(ctypes.addressof(command), ctypes.c_void_p),
-            # sense buffer memory
-            sbp=ctypes.cast(sense, ctypes.c_void_p),
-            # a timeout for this command in ms
-            timeout=3000,
-            # SG_FLAG_*, normally 0
-            flags=0,
-            # unused
-            pack_id=0,
-            # unused
-            usr_ptr=None,
-            # output: SCSI-status
-            status=0,
-            # output: shifted, maskes SCSI-stauts
-            masked_status=0,
-            # output: optional: message level data
-            msg_status=0,
-            # output: byte actually written to sbp
-            sb_len_wr=0,
-            # output: errors from host adapter
-            host_status=0,
-            # output: errors from software driver
-            driver_status=0,
-            # output: result_len: actually transferred data
-            resid=0,
-            # output: time for the command in ms
-            duration=0,
-            # output: auxiliary information (?)
-            info=0,
-        )
-
-        return sgio, sense
-
-    def _call_IOCTL(self, command, sg_dxfer, databuffer):
-        """
-        Call the ioctl()
-
-        This function will create the struct to call the ioctl() and handle return
-        codes.
-
-        Arguments:
-        command -- SCSI Command payload to send. 16-Byte buffer containing the SCSI
-                   command parameters.
-        sg_dxfer -- _SG_DXFER_*: Direction of the SCSI transfer
-        databuffer -- 512 byte long buffer to be written or read
-        """
-        sgio, sense = self._get_SGIO(command, sg_dxfer, databuffer)
-        #    print("SGIO:")
-        #    print(self.to_pretty_hex(sgio))
-
-        with open(self.sg, "r+b", buffering=0) as fh:
-            rc = fcntl.ioctl(fh, self._SG_IO, sgio)
-            if rc != 0:
-                raise IoctlFailed(f"SG_IO ioctl() failed with non-zero exit-code {rc}")
-        return databuffer, sense, sgio
-
     def write_config(self, data):
         """
         Writes the eeprom contents from data into the config EEPROM on the auxiliary
@@ -360,7 +214,9 @@ class Usb2642:
         payload[ctypes.sizeof(data) : ctypes.sizeof(data) + ctypes.sizeof(data_suffix)] = data_suffix  # noqa: E203
 
         # Perform the actual SCSI transfer
-        self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, payload)
+        _, status = execute_scsi_command(self.sg, scsiCommand, payload, "out")
+        if status != 0:
+            raise IoctlFailed(f"SCSI Transaction ended with status {status}. Config write failed.")
 
     def write_read_to(self, i2cAddr, writeData, readLength):
         """
@@ -398,11 +254,11 @@ class Usb2642:
         #    print(self.to_pretty_hex(scsiCommand))
         #    print("I2C-Payload:")
         #    print(self.to_pretty_hex(data))
-        data, sense, sgio = self._call_IOCTL(scsiCommand, self._SG_DXFER_FROM_DEV, data)
+        data, status = execute_scsi_command(self.sg, scsiCommand, data, "in")
 
-        if sgio.status != 0:
+        if status != 0:
             raise I2cTransactionFailed(
-                f"SCSI-Transaction ended with status {sgio.status}. I2C-Transaction has probably failed."
+                f"SCSI-Transaction ended with status {status}. I2C-Transaction has probably failed."
             )
 
         return list(data[:readLength])
@@ -434,11 +290,11 @@ class Usb2642:
         #    print(self.to_pretty_hex(scsiCommand))
         #    print("I2C-Payload:")
         #    print(self.to_pretty_hex(data))
-        data, sense, sgio = self._call_IOCTL(scsiCommand, self._SG_DXFER_TO_DEV, data)
+        data, status = execute_scsi_command(self.sg, scsiCommand, data, "out")
 
-        if sgio.status != 0:
+        if status != 0:
             raise I2cTransactionFailed(
-                f"SCSI-Transaction ended with status {sgio.status}. I2C-Transaction has probably failed."
+                f"SCSI-Transaction ended with status {status}. I2C-Transaction has probably failed."
             )
 
     def _read_register(self, reg, size, retries=5):
@@ -448,16 +304,16 @@ class Usb2642:
 
         while True:
             databuffer = ctypes.c_buffer(size)
-            _, _, sgio = self._call_IOCTL(scsiCommand, self._SG_DXFER_FROM_DEV, databuffer)
+            _, status = execute_scsi_command(self.sg, scsiCommand, databuffer, "in")
 
-            if retries and sgio.status == 2:
+            if retries and status == 2:
                 sleep(0.5)
                 retries -= 1
                 continue
 
-            if sgio.status != 0:
+            if status != 0:
                 raise SDTransactionFailed(
-                    f"SCSI Transaction ended with status {sgio.status}. SD Transaction has probably failed."
+                    f"SCSI Transaction ended with status {status}. SD Transaction has probably failed."
                 )
 
             break
