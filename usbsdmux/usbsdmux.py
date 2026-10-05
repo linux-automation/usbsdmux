@@ -4,6 +4,7 @@
 # SPDX-FileCopyrightText: 2017 The USB-SD-Mux Authors
 
 import os
+import sys
 import time
 
 from . import sd_regs
@@ -28,6 +29,22 @@ def autoselect_driver(sg):
 
     base_sg = os.path.realpath(sg)
     sg_name = os.path.basename(base_sg)
+
+    if sys.platform == 'darwin':
+        import usb.core
+
+        dev_classic = usb.core.find(idVendor=0x0424, idProduct=0x2642)
+        if dev_classic is not None:
+            return UsbSdMuxClassic(sg)
+
+        dev_fast = usb.core.find(idVendor=0x0424, idProduct=0x4041)
+        if dev_fast is not None:
+            return UsbSdMuxFast(sg)
+
+        raise UnknownUsbSdMuxRevisionException(
+            "Could not find or determine type of USB-SD-Mux. Try to use sudo."
+        )
+
     model_filename = f"/sys/class/scsi_generic/{sg_name}/device/model"
     try:
         with open(model_filename) as fh:
@@ -144,6 +161,13 @@ class UsbSdMuxClassic(UsbSdMux):
     _card_removed = Pca9536.gpio_3
 
     def __init__(self, sg):
+        import sys
+        import os
+        if sys.platform == "darwin" and os.geteuid() != 0:
+            print("error: tool needs root privileges:")
+            print(f"  sudo {' '.join(sys.argv)}\n")
+            sys.exit(1)
+        # =======================================================================
         self._pca = Pca9536(sg)
         self._usb = self._pca.get_usb()
 
@@ -206,6 +230,13 @@ class UsbSdMuxFast(UsbSdMux):
     gpio1 = Tca6408.gpio_4
 
     def __init__(self, sg):
+        import sys
+        import os
+        if sys.platform == "darwin" and os.geteuid() != 0:
+            print("error: tool needs root privileges:")
+            print(f"  sudo {' '.join(sys.argv)}\n")
+            sys.exit(1)
+        # =======================================================================
         self._tca = Tca6408(sg)
         self._assure_default_state()
         self._usb = self._tca.get_usb()

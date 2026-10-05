@@ -5,6 +5,7 @@
 
 import ctypes
 import fcntl
+import sys
 from time import sleep
 
 from .ctypehelper import (
@@ -307,6 +308,165 @@ class Usb2642:
 
         return sgio, sense
 
+    def _call_macos_usb(self, command, sg_dxfer, databuffer):
+        import usb.core
+        import usb.util
+        import struct
+        import ctypes
+        import time
+
+        class MacosSgioDummy:
+            def __init__(self):
+                self.status = 0
+        sgio_dummy = MacosSgioDummy()
+
+        if hasattr(command, '_fields_') or not isinstance(command, (bytes, bytearray)):
+            command_bytes = bytes(command)
+        else:
+            command_bytes = command
+
+        if not hasattr(self, '_macos_usb_dev') or self._macos_usb_dev is None:
+            dev = usb.core.find(idVendor=0x0424, idProduct=0x4041) or usb.core.find(idVendor=0x0424, idProduct=0x2642)
+            if dev is None:
+                raise RuntimeError("USB-SD-Mux Hardware was not found on USB-Bus.")
+
+            try:
+                if dev.is_kernel_driver_active(0):
+                    dev.detach_kernel_driver(0)
+            except Exception:
+                pass
+
+            try:
+                dev.set_configuration()
+                usb.util.claim_interface(dev, 0)
+            except Exception:
+                try:
+                    usb.util.claim_interface(dev, 0)
+                except Exception:
+                    pass
+
+            self._macos_usb_dev = dev
+        else:
+            dev = self._macos_usb_dev
+
+        ep_out = 0x02 if dev.idProduct == 0x4041 else 0x01
+        ep_in = 0x82 if dev.idProduct == 0x4041 else 0x81
+
+        try:
+            dxfer_val = int(sg_dxfer.value if hasattr(sg_dxfer, 'value') else sg_dxfer)
+        except Exception:
+            dxfer_val = -3
+
+        if dxfer_val == -3 or dxfer_val == 1:
+            direction = 0x80  # Inbound (Read)
+        else:
+            direction = 0x00  # Outbound (Write)
+
+        transfer_len = len(databuffer) if databuffer else 0
+
+        tag = int(time.time() * 1000) & 0xFFFFFFFF
+        cbw = struct.pack("<4sIIBBB16s",
+            b"USBC", tag, transfer_len, direction, 0, len(command_bytes), command_bytes.ljust(16, b"\x00")
+        )
+
+        dev.write(ep_out, cbw, 1000)
+
+        read_bytes = b""
+        if transfer_len > 0:
+            if direction == 0x80: # READ
+                try:
+                    read_data = dev.read(ep_in, transfer_len, 1000)
+                    read_bytes = bytes(read_data)
+                except Exception as e:
+                    try:
+                        dev.clear_halt(ep_in)
+                    except Exception:
+                        pass
+                    read_bytes = b""
+            else: # WRITE
+                try:
+                    write_data = ctypes.string_at(ctypes.addressof(databuffer), transfer_len)
+                except Exception:
+                    write_data = bytes(databuffer)[:transfer_len]
+                try:
+                    dev.write(ep_out, write_data, 1000)
+                except Exception as e:
+                    try:
+                        dev.clear_halt(ep_out)
+                    except Exception:
+                        pass
+
+        final_read_payload = bytearray(read_bytes)
+        csw_bytes = b""
+        csw_extracted = False
+
+        if direction == 0x80 and len(final_read_payload) >= 13 and final_read_payload[:4] == b"USBS":
+            csw_bytes = bytes(final_read_payload[:13])
+            final_read_payload = final_read_payload[13:] + b"\x00" * 13
+            csw_extracted = True
+
+        if not csw_extracted:
+            try:
+                csw_data = dev.read(ep_in, 13, 1000)
+                csw_bytes = bytes(csw_data)
+            except Exception as e:
+                try:
+                    dev.clear_halt(ep_in)
+                    csw_data = dev.read(ep_in, 13, 1000)
+                    csw_bytes = bytes(csw_data)
+                except Exception:
+                    if len(final_read_payload) >= 13:
+                        for offset in range(len(final_read_payload) - 12):
+                            if final_read_payload[offset:offset+4] == b"USBS":
+                                csw_bytes = bytes(final_read_payload[offset:offset+13])
+                                break
+
+        if len(csw_bytes) >= 13 and csw_bytes[:4] == b"USBS":
+            _, _, csw_residue, csw_status = struct.unpack("<4sIIB", csw_bytes[:13])
+            sgio_dummy.status = csw_status
+        else:
+            sgio_dummy.status = 0
+
+        if direction == 0x80 and len(databuffer) > 0 and len(final_read_payload) > 0:
+            if hasattr(databuffer, 'raw'):
+                databuffer.raw = bytes(final_read_payload[:len(databuffer.raw)])
+            elif hasattr(databuffer, '_fields_'):
+                ctypes.memmove(ctypes.byref(databuffer), bytes(final_read_payload), len(databuffer))
+            elif isinstance(databuffer, (bytearray, memoryview)):
+                databuffer[:len(databuffer)] = final_read_payload[:len(databuffer)]
+            else:
+                for i in range(min(len(databuffer), len(final_read_payload))):
+                    databuffer[i] = final_read_payload[i]
+
+        try:
+            dev.clear_halt(ep_in)
+            dev.clear_halt(ep_out)
+        except Exception:
+            pass
+
+        real_opcode = command_bytes[1] if len(command_bytes) > 1 else 0
+
+        if direction == 0x00 and sgio_dummy.status == 0 and real_opcode == 0x23:
+
+            if not hasattr(self, '_reset_registered') or not self._reset_registered:
+                import atexit
+
+                def _deferred_final_reset(usb_device_handle):
+                    try:
+                        usb.util.release_interface(usb_device_handle, 0)
+                        usb_device_handle.reset()
+                        time.sleep(0.4)
+                    except Exception as e:
+                        print(f"Error: deferred reset failed: {e}")
+
+                try:
+                    atexit.register(_deferred_final_reset, dev)
+                    self._reset_registered = True
+                except Exception:
+                    pass
+
+        return databuffer, bytes(emulated_linux_sense := bytearray(32)), sgio_dummy
+
     def _call_IOCTL(self, command, sg_dxfer, databuffer):
         """
         Call the ioctl()
@@ -320,6 +480,9 @@ class Usb2642:
         sg_dxfer -- _SG_DXFER_*: Direction of the SCSI transfer
         databuffer -- 512 byte long buffer to be written or read
         """
+        if sys.platform == 'darwin':
+            return self._call_macos_usb(command, sg_dxfer, databuffer)
+
         sgio, sense = self._get_SGIO(command, sg_dxfer, databuffer)
         #    print("SGIO:")
         #    print(self.to_pretty_hex(sgio))
